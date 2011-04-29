@@ -1,0 +1,15 @@
+GIT
+  remote: git@github.com:chbrown/core_audio.git
+  revision: 002278a55eaee08400da384ca7659798cc76f0e8
+  specs:
+    core_audio (0.0.2)
+
+GEM
+  remote: http://rubygems.org/
+  specs:
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  core_audio!

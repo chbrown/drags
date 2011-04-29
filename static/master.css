@@ -1,0 +1,238 @@
+/*------------------------------------*\
+  RESET
+\*------------------------------------*/
+/* http://meyerweb.com/eric/tools/css/reset/
+   v2.0b1 | 201101
+   NOTE:WORK IN PROGRESS
+   USE WITH CAUTION AND TEST WITH ABANDON */
+
+html,body,div,span,applet,object,iframe,
+h1,h2,h3,h4,h5,h6,p,blockquote,pre,
+a,abbr,acronym,address,big,cite,code,
+del,dfn,em,img,ins,kbd,q,s,samp,
+small,strike,strong,sub,sup,tt,var,
+b,u,i,center,
+dl,dt,dd,ol,ul,li,
+fieldset,form,label,legend,
+table,caption,tbody,tfoot,thead,tr,th,td,
+article,aside,canvas,details,figcaption,figure,
+footer,header,hgroup,menu,nav,section,summary,
+time,mark,audio,video{
+  margin:0;
+  padding:0;
+  border:0;
+  outline:0;
+  font-size:100%;
+  font:inherit;
+  vertical-align:baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article,aside,details,figcaption,figure,
+footer,header,hgroup,menu,nav,section{
+  display:block;
+}
+body{
+  line-height:1;
+}
+ol,ul{
+  list-style:none;
+}
+blockquote,q{
+  quotes:none;
+}
+blockquote:before,blockquote:after,
+q:before,q:after{
+  content:'';
+  content:none;
+}
+/* remember to define visible focus styles!
+:focus{
+  outline:?????;
+} */
+
+/* remember to highlight inserts somehow! */
+ins{
+  text-decoration:none;
+}
+del{
+  text-decoration:line-through;
+}
+
+table{
+  border-collapse:collapse;
+  border-spacing:0;
+}
+
+/*------------------------------------*\
+  MAIN
+\*------------------------------------*/
+/* GO! */
+
+/*@font-face {
+  font-family: HelveticaNeueLight;
+  font-style: normal;
+  font-weight: 200;
+  src: local('HelveticaNeue-Light'), local('Helvetica Neue Light'), local('Helvetica Neue'), url('/static/fonts/HelveticaNeueLight.ttf');
+}
+@font-face {
+  font-family: "HelveticaNeueUltraLight";
+  src: url("HNUL.ttf") format('truetype');
+}
+*/
+
+body {
+  font-family: Garamond, Georgia, serif;
+  background: url('/static/images/bg-noise.gif') repeat top left;
+  font-size: 110%;
+  line-height: 1.2;
+}
+/*h1 {
+  margin: 0;
+  padding: 9px;
+  font-size: 265%;
+  color: #FFFFFF;
+}
+*/
+a { color: #1d2a41; }
+a:hover { color: #1b376a; }
+.bold { font-weight: bold; }
+#super-container {
+  background: url('/static/images/bg-gradient.gif') repeat-x top left;
+  padding: 40px 0;
+}
+#container {
+  width: 720px;
+  margin: 0 auto;
+}
+
+.icon {
+  display: inline-block;
+  width: 48px;
+  height: 48px;
+  background-image: url(/static/images/glyph-icons.png);
+  vertical-align: middle;
+}
+
+a                .icon-chat2 { background-position:    0px   0px; }
+a:hover          .icon-chat2 { background-position:    0px -48px; }
+a.disabled:hover .icon-chat2 { background-position:    0px -96px; }
+a.disabled.hover .icon-chat2 { background-position:    0px -96px; }
+/*.icon-            { background-position:  -32px   0  ; }
+.icon-            { background-position:  -48px   0  ; }
+.icon-            { background-position:  -64px   0  ; }
+.icon-            { background-position:  -80px   0  ; }
+.icon-            { background-position:  -96px   0  ; }
+.icon-            { background-position: -112px   0  ; }
+.icon-            { background-position: -128px   0  ; }*/
+
+h2 {
+  font-size: 120%;
+  margin-bottom: 1ex;
+  font-weight: bold;
+  margin-bottom: 2ex;
+}
+p {
+  margin-bottom: 1.5ex;
+}
+ul {
+  list-style: circle;
+} 
+ul li {
+  margin: 1.5ex 1.5em;
+}
+strong {
+  font-weight: bold;
+}
+em {
+  font-style: italic;
+}
+
+.page {
+  margin: 20px 10px;
+  padding: 10px;
+  border: 1px dotted #444;
+  text-align: center;
+}
+
+.play {
+  text-align: center;
+}
+
+table.stimuli {
+  width: 90%;
+  margin: 10px auto 20px auto;
+}
+table.stimuli td {
+  text-align: center;
+  vertical-align: middle;
+}
+#stimulus_1, #stimulus_2 {
+  font-size: 110%;  
+}
+#stimulus_1, #stimulus_2, #stimulus_3 {
+  width: 33%;
+}
+table.stimuli_choice {
+  margin: 0 auto;
+}
+table.stimuli_choice td {
+  font-size: 110%;
+  text-align: left;
+  padding: 3px;
+}
+table.stimuli_choice td input {
+  
+}
+table.slider {
+  width: 100%;
+  margin: 0 auto 10px;
+}
+table.slider td.label {
+  width: 15%;
+  font-size: 85%;
+  vertical-align: top;
+}
+  
+#sureness {
+  font-size: 70%;
+  margin: 0 1em;
+}
+#debug {
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding: 2px 4px;
+  font-size: 80%;
+  font-variant: small-caps;
+}
+#next {
+  font-size: 70%;
+  margin: 2ex;
+}
+
+#progress_footer {
+  position: fixed;
+  bottom: 1ex;
+  width: 100%;
+  left: 0;
+  right: 0;
+  font-size: 80%;
+  line-height: 1.5;
+}
+#progress_footer td {
+  vertical-align: top;
+}
+#progress_footer span {
+  
+}
+#progressbar {
+  height: 8px;
+}
+.left { text-align: left; }
+.right { text-align: right; }
+.center { text-align: center; }
+.small { font-size: 90%; }
+.smaller { font-size: 80%; }
+table.padcell td { padding: 2px 4px; }
+table.twocol { width: 100%; }
+table.twocol td { width: 50%; }
