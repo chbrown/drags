@@ -16,7 +16,8 @@ mu.root = path.join(__dirname, 'user_modules/dichotic/templates')
 var repl = require('repl')
 
 // ARGV[0] is "node" and [1] is the name of this script and [2] is the name of the first command line argument
-var CONFIG = JSON.parse(fs.readFileSync(process.ARGV[2] || 'config.json'));
+var config_file = (process.ARGV[2] && process.ARGV[2].substr(-5) == '.json') ? process.ARGV[2] : 'config.json'
+var CONFIG = JSON.parse(fs.readFileSync(config_file));
 
 JSON.niceParse = function(str, default_obj) {
   try { return JSON.parse(str) }
