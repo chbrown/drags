@@ -6,7 +6,6 @@
   <link rel="stylesheet" href="/static/master.css" type="text/css" media="all" charset="utf-8">
   <title>Phonetics Perception Survey</title>
   <script type="text/javascript" src="/static/jquery.js"></script>
-  <script type="text/javascript" src="/static/jquery-cookie.js"></script>
   <script type="text/javascript" src="/static/jquery-ui.js"></script>
   <link rel="stylesheet" href="/static/jquery-ui/jquery-ui.css" type="text/css" media="all" charset="utf-8">
   <script type="text/javascript" src="/static/soundmanager2-jsmin.js"></script>
@@ -43,9 +42,9 @@
   <div id="super-container"><div id="container">
     {{>yield}}
   </div></div>
-  <div id="debug">
+  {{|<div id="debug">
     <a href="#" id="reset_to_name">Reset to name</a>
     <a href="#" id="reset_to_intro">Reset to intro</a>
     <a href="#" id="two_left">Two left</a>
-  </div>
+  </div>}}
 </body>

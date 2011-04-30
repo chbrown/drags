@@ -228,6 +228,28 @@ table.slider td.label {
 #progressbar {
   height: 8px;
 }
+#shortcuts_button {
+  font-size: 90%;
+  font-variant: small-caps;
+}
+#shortcuts_button:link {
+  text-decoration: none;
+}
+#shortcuts_button:hover {
+  text-decoration: underline;
+}
+#shortcuts {
+  margin: 8px;
+  font-size: 90%;
+}
+#shortcuts table {
+  margin-top: 5px;
+}
+#shortcuts td.key {
+  font-family: "Courier New", Courier, sans-serif;
+  padding-right: 12px;
+  text-align: center;
+}
 .left { text-align: left; }
 .right { text-align: right; }
 .center { text-align: center; }

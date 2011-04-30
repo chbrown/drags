@@ -85,10 +85,10 @@ $(function() {
       <td id="stimulus_3" style="visibility: hidden">
         <table class="stimuli_choice">
           <tr>
-            <td><input type="radio" name="word" value="boot" id="word_1" /><label for="word_1"> Boot</label></td>
+            <td><input type="radio" name="word" value="boot" id="word_1" /><label for="word_1"> boot</label></td>
           </tr>
           <tr>
-            <td><input type="radio" name="word" value="bait" id="word_2" /><label for="word_2"> Bait</label></td>
+            <td><input type="radio" name="word" value="bait" id="word_2" /><label for="word_2"> bait</label></td>
           </tr>
         </table>
       </td>
@@ -114,10 +114,10 @@ $(function() {
 <p>The sureness slider is optional. The only <em>required</em> thing is to select a one of the radio buttons. </p>
 
 <p>Throughout the actual experiment, the sound will only play once, 
-  so <strong>please use the repeatable player above to make sure your volume is set correctly.</strong></p>
+  so <strong>please use the repeatable player above to make sure your volume is set correctly, before continuing.</strong></p>
   
-<p>As long as you have a link to this webpage, you can come back whenever, as long as you use the same browser on the same computer;
-  there is already a cookie linking keeping track of your session here.</p>
+<p>As long as you have a link to this webpage, you can come back whenever, assuming you use the same browser on the same computer;
+  there is already a cookie keeping track of your session here.</p>
   
 <p>When you're ready, click this button:&nbsp; <input type="button" value="Start!" id="next" /></p> 
 

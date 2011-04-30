@@ -9,6 +9,7 @@ var heard = false;
 var total = 166; // hack
 var stimulus_id = {{stimulus_id}};
 var remaining;
+var nextEnabled = false;
 function play_1() {
   soundManager.play('1', {
     onfinish: function() {
@@ -55,18 +56,38 @@ function listen(ev) {
   ev.preventDefault(); // don't jump up to the top for the hash.
 }
 function next(ev) {
-  // prevent from continuing until the selected something.
-  var done = new Date();
+  if (nextEnabled) {
+    // prevent from continuing until the selected something.
+    var done = new Date();
   
-  var value = $('input[name=' + stimulus_id + ']:checked').val();
-  var sureness = Math.floor($("#sureness").slider("value"))
-  $.post('/api/1/responses', JSON.stringify({ responses: [{ 
-    stimulus_id: stimulus_id, total_time: (done - page_loaded), value: value, sureness: sureness
-  }] }));
-
-  $.cookie('remaining', remaining.slice(1), cookie_defaults);
-  $.cookie('heard', 'false', cookie_defaults);
-  window.location = '/dichotic/';
+    var value = $('input[name=' + stimulus_id + ']:checked').val();
+    var sureness = Math.floor($("#sureness").slider("value"))
+    var response_data = JSON.stringify({ responses: [{ 
+      stimulus_id: stimulus_id, total_time: (done - page_loaded), value: value, sureness: sureness
+    }] });
+    console.log('Sending ajax response: ' + value);
+    $.ajax({
+      url: '/api/1/responses',
+      type: 'POST',
+      data: response_data,
+      dataType: 'text',
+      complete: function() {
+        remaining = remaining.slice(1)
+        if (remaining.length > 0) {
+          $.cookie('remaining', remaining, cookie_defaults);
+          $.cookie('heard', 'false', cookie_defaults);
+        }
+        else {
+          $.cookie('action', 'debrief', cookie_defaults);
+        }
+        window.location = '/dichotic/';
+      }
+    });
+  }
+}
+function enableNext() {
+  $("#next").attr("disabled", null);
+  nextEnabled = true;
 }
 $(function() {
   remaining = $.cookie('remaining').split(',');
@@ -79,6 +100,8 @@ $(function() {
   $("#progress_index").html(total - remaining.length);
   $("#progress_total").html(total);
   $("#progressbar").progressbar({ value: ((total - remaining.length) / total) * 100 });
+  $('#stimulus_top').click(enableNext);
+  $('#stimulus_bottom').click(enableNext);
   $(document).keydown(function(ev) {
     switch (ev.which) {
       case 76:
@@ -98,6 +121,10 @@ $(function() {
     // '2' == 50
     // console.log(ev.which, ev.which === '13', ev.which === 13);
   });
+  $('#shortcuts_button').click(function(ev) {
+    $('#shortcuts').toggle();
+    ev.preventDefault(); // don't jump up to the top for the hash.
+  });
 });
 </script>
 
@@ -113,10 +140,10 @@ $(function() {
       <td id="stimulus_3" style="visibility: hidden">
         <table class="stimuli_choice">
           <tr>
-            <td><input type="radio" name="{{stimulus_id}}" value="boot" id="stimulus_top" /><label for="stimulus_top"> {{stimulus_top}}</label></td>
+            <td><input type="radio" name="{{stimulus_id}}" value="{{stimulus_top}}" id="stimulus_top" /><label for="stimulus_top"> {{stimulus_top}}</label></td>
           </tr>
           <tr>
-            <td><input type="radio" name="{{stimulus_id}}" value="bait" id="stimulus_bottom" /><label for="stimulus_bottom"> {{stimulus_bottom}}</label></td>
+            <td><input type="radio" name="{{stimulus_id}}" value="{{stimulus_bottom}}" id="stimulus_bottom" /><label for="stimulus_bottom"> {{stimulus_bottom}}</label></td>
           </tr>
         </table>
       </td>
@@ -134,9 +161,19 @@ $(function() {
       </tr>
     </table>
     
-    <input type="button" value="Next" id="next" />
+    <input type="button" value="Next" id="next" disabled="disabled" />
   </div>
-  
+</div>
+
+<a id="shortcuts_button" href="#"><img src="/static/images/keyboard.png" /> Show keyboard shortcuts</a>
+<div id="shortcuts" style="display: none">
+  You can simply press keys to listen and navigate from question to question, and select answers:
+  <table>
+    <tr><td class="key">L or l</td><td>Listen</td></tr>
+    <tr><td class="key">N or n</td><td>Next</td></tr>
+    <tr><td class="key">1</td><td>Select the first option.</td></tr>
+    <tr><td class="key">2</td><td>Select the second option.</td></tr>
+  </table>
 </div>
 
 

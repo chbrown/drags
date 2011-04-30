@@ -55,4 +55,6 @@ $(function() {
   <input type="button" value="Next" id="next" />
 </div>
     
-    
+<p><em>One more note:</em> some of the selections will be incredibly frustrating, 
+  because you have to pick between two options, neither of which may seem right. 
+  In that case, just pick the one that is <em>closest</em>.</p>

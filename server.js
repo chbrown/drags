@@ -173,7 +173,11 @@ function _createUser(ip, user_agent, cookies, callback) {
       }, client)
     }, client)
     // ... all we need is the user_id
-    cookies.set('ticket', ticket_name, cookieDefaults())
+    var cookie_defaults = cookieDefaults()
+    cookies.set('ticket', ticket_name, cookie_defaults)
+    cookies.set('action', 'intro', cookie_defaults)
+    cookies.set('remaining', '', cookie_defaults)
+    cookies.set('heard', 'false', cookie_defaults)
     callback(undefined, user_id)
   })
 }
@@ -265,7 +269,7 @@ var dichotic_actions = {
     })
   },
   debrief: function(req, res, state) {
-    
+    mu.render(['layout.mu', 'debrief.mu'], {}).pipe(res)
   }
 }
 
@@ -290,8 +294,8 @@ function dichotic(req, res, action) {
     // JSON.niceParse(state_cookie, dichotic_default_state)
     var state = {}
     state.action = _getCookieWithDefault(cookies, 'action', 'intro', cookieDefaults())
-    state.remaining = cookies.get('remaining')
     state.heard = _getCookieWithDefault(cookies, 'heard', 'false', cookieDefaults())
+    state.remaining = cookies.get('remaining')
     if (!state.remaining) {
       state.remaining = dichotic_stimuli_indices.shuffle(); // shuffle does a shallow copy of an array, and returns fisher-yates shuffle
       cookies.set('remaining', state.remaining, cookieDefaults())
@@ -300,11 +304,8 @@ function dichotic(req, res, action) {
       state.remaining = state.remaining.split(',')
     }
     state.user_id = user_id // don't let the user lie about their user_id
-    // console.log('State: ' + util.inspect(state));
     
     // state.count = parseInt() || 0
-
-    // var state_name = 'intro';
 
     // if (cookie_state.action === 'intro') {
     //   state_name = 'intro';
@@ -318,6 +319,10 @@ function dichotic(req, res, action) {
     // else {
     //   state_name = 'debrief';
     // }
+    
+    // if (state.action == 'stimuli' && state.remaining == ) {
+    //   
+    // }
 
     dichotic_action = dichotic_actions[state.action] || dichotic_actions["intro"]
     dichotic_action(req, res, state)
@@ -325,27 +330,14 @@ function dichotic(req, res, action) {
 }
 
 function api(req, res, action) {
-  // res.write('API')
-  // res.end()
-  
-  //console.log(util.inspect(req, false, null));
-  // if (req.method.toLowerCase() == 'post') {
-  // req.
-  // var form = new formidable.IncomingForm();
-  // form.parse(req, function(err, fields, files) {
   var postData = '';
   req.addListener("data", function(chunk) {
 		postData += chunk;
 	})
-  // handle req's errors.
+  // todo: handle req's errors.
 	req.addListener("end", function() {
-	  console.log('postData: ' + postData);
-		//parse req.content and do stuff with it
-    // if (err) throw err
-    // console.log('Fields: ' + util.inspect(fields));
-    // addTextHead(res).end('success')
+    // console.log('postData: ' + postData);
 
-    // fields = { 'stimulus_id': 
     var cookies = new Cookies(req, res)
     _getUserIdFromRequest(req, res, cookies, function(err, user_id) {
       if (err) throw err
@@ -359,15 +351,10 @@ function api(req, res, action) {
         querySql("INSERT INTO responses (user_id, stimulus_id, total_time, sureness, value, details) VALUES ($1, $2, $3, $4, $5, $6)",
           [user_id, response.stimulus_id, response.total_time || null, response.sureness || null, response.value || null, response.details || null])
       })
-      console.log('User_id: ' + user_id);
-      console.log('Responses: ' + util.inspect(responses));
-      
+      // console.log('User_id: ' + user_id);
+      // console.log('Responses: ' + util.inspect(responses));
     
       addTextHead(res).end('success')
-      // querySql("INSERT INTO responses  id, user_id FROM tickets WHERE tickets.name = $1", [ticket_name], function(ticket_id_results, client) {
-      //   
-      // })
-    
     })
   })
 }
@@ -377,8 +364,7 @@ function router(req, res) {
   // console.log(req);
   var m = null;
   if (m = req.url.match(/^\/api\/\d+\/(.+)$/)) {
-    // discard the version, for now
-    // console.log('API: ' + m[1])
+    // discard the version, for now // console.log('API: ' + m[1])
     api(req, res, m[1])
   }
   else if (m = req.url.match(/^\/([^\/]+)(\/(.*))?$/)) {
