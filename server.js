@@ -379,8 +379,8 @@ function router(req, res) {
   }
   else {
     // addHtmlHead(res)
-    response.writeHead(302, { 'Location': '/dichotic/'});
-    response.end();
+    res.writeHead(302, { 'Location': '/dichotic/'});
+    res.end();
     // res.end('Error: 404')
   }
 }
