@@ -56,7 +56,8 @@ function listen(ev) {
   ev.preventDefault(); // don't jump up to the top for the hash.
 }
 function next(ev) {
-  if (nextEnabled) {
+  // should checking for heard be down under enableNext()?
+  if (nextEnabled && heard) {
     // prevent from continuing until the selected something.
     var done = new Date();
   

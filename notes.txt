@@ -1,0 +1,1 @@
+select total_time, responses.value, name, stimuli.value from responses inner join stimuli on stimuli.id = stimulus_id;

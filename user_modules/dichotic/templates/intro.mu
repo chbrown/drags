@@ -80,8 +80,8 @@ $(function() {
   
   <table class="stimuli">
     <tr>
-      <td id="stimulus_1" style="visibility: hidden">Beat</td>
-      <td id="stimulus_2" style="visibility: hidden">Bet</td>
+      <td id="stimulus_1" style="visibility: hidden">beat</td>
+      <td id="stimulus_2" style="visibility: hidden">bet</td>
       <td id="stimulus_3" style="visibility: hidden">
         <table class="stimuli_choice">
           <tr>
