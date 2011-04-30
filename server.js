@@ -378,8 +378,10 @@ function router(req, res) {
     res.end(util.inspect(req, false, null))
   }
   else {
-    addHtmlHead(res)
-    res.end('Error: 404')
+    // addHtmlHead(res)
+    response.writeHead(302, { 'Location': '/dichotic/'});
+    response.end();
+    // res.end('Error: 404')
   }
 }
 
