@@ -1,0 +1,37 @@
+#!/bin/bash
+
+CURR_PATH=/www/drags
+export PATH=/usr/local/bin:/usr/bin:$PATH
+
+start() {
+  echo Starting Node
+  cd $CURR_PATH
+  nohup node server.js config-linode.json --tag drags-server >> log/node_out.log 2>> log/node_error.log &
+  pgrep node -n > log/node.pid
+  echo Done starting Node
+}
+
+stop() {
+  echo Stopping Node
+  cd $CURR_PATH
+  kill `cat log/node.pid`
+  rm log/node.pid
+  echo Done stopping Node
+}
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  *)
+    echo "usage: $0 {start|stop|restart}"
+esac
+exit 0

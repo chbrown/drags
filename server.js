@@ -352,8 +352,6 @@ function api(req, res, action) {
         querySql("INSERT INTO responses (user_id, stimulus_id, total_time, sureness, value, details) VALUES ($1, $2, $3, $4, $5, $6)",
           [user_id, response.stimulus_id, response.total_time || null, response.sureness || null, response.value || null, response.details || null])
       })
-      // console.log('User_id: ' + user_id);
-      // console.log('Responses: ' + util.inspect(responses));
     
       addTextHead(res).end('success')
     })
