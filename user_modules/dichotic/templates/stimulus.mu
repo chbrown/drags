@@ -1,51 +1,39 @@
 <script>
+var soundManagerReady = false;
 soundManager.onready(function() {
   soundManager.createSound('1', '/static/dichotic/control/{{category}}/{{control_1_file}}.mp3');
   soundManager.createSound('2', '/static/dichotic/control/{{category}}/{{control_2_file}}.mp3');
   soundManager.createSound('3', '/static/dichotic/stereo/{{category}}/{{stimulus_file}}.mp3');
+  soundManagerReady = true;
 });
 var stimulus_gap = 300;
 var heard = false;
+var heard_at = null;
 var total = 166; // hack
 var stimulus_id = {{stimulus_id}};
 var remaining;
-var nextEnabled = false;
-function play_1() {
-  soundManager.play('1', {
-    onfinish: function() {
-      $('#stimulus_1').css({visibility: 'visible'});
-      setTimeout('play_2()', stimulus_gap);
-    }
-  });
-}
-function play_2() {
-  soundManager.play('2', {
-    onfinish: function() {
-      $('#stimulus_2').css({visibility: 'visible'});
-      setTimeout('play_3()', stimulus_gap);
-    }
-  });
-}
-function play_3() {
-  soundManager.play('3', {
-    onfinish: function() {
-      $('#stimulus_3').css({visibility: 'visible'});
-      setHeard();
-    }
-  });
-}
+var next_enabled = false;
+var shortcuts_visible = false;
+var autoplay = false;
+
 function setHeard() {
   $("a#play").addClass('disabled');
   $('#controls').css({visibility: 'visible'});
-  $('#stimulus_1').css({visibility: 'visible'});
-  $('#stimulus_2').css({visibility: 'visible'});
-  $('#stimulus_3').css({visibility: 'visible'});
+  $('#sound_1').css({visibility: 'visible'});
+  $('#sound_2').css({visibility: 'visible'});
+  $('#sound_3').css({visibility: 'visible'});
   heard = true;
   $.cookie('heard', 'true', cookie_defaults);
 }
 function listen(ev) {
+  if (ev)
+    ev.preventDefault(); // don't jump up to the top for the hash.
   if (!heard) {
-    play_1(); // actually plays the chain
+    playSoundChain(300, setHeard, [
+      {id: '1', reveal: '#sound_1'},
+      {id: '2', reveal: '#sound_2'},
+      {id: '3', reveal: '#sound_3'},
+    ])
   }
   else {
     $("a#play").addClass('hover');
@@ -53,14 +41,15 @@ function listen(ev) {
       $("a#play").removeClass('hover'); 
     }, 1000);
   }
-  ev.preventDefault(); // don't jump up to the top for the hash.
 }
+
+// function submitResponse(stimulus_id) {
+// }
 function next(ev) {
-  // should checking for heard be down under enableNext()?
-  if (nextEnabled && heard) {
+  if (next_enabled) {
     // prevent from continuing until the selected something.
     var done = new Date();
-  
+    
     var value = $('input[name=' + stimulus_id + ']:checked').val();
     var sureness = Math.floor($("#sureness").slider("value"))
     var response_data = JSON.stringify({ responses: [{ 
@@ -87,11 +76,34 @@ function next(ev) {
   }
 }
 function enableNext() {
-  $("#next").attr("disabled", null);
-  nextEnabled = true;
+  if (heard) {
+    $("#next").attr("disabled", null);
+    next_enabled = true;
+  }
+}
+function refreshShortcutsVisible() {
+  $('#shortcuts').toggle(shortcuts_visible);
+  $.cookie('shortcuts_visible', shortcuts_visible ? 'true' : 'false', cookie_defaults);
+}
+function refreshHideSureness(hide_sureness) {
+  // var visibility = ;
+  $('.sureness').css({visibility: hide_sureness ? "hidden" : "visible"});
+  $('#hide_sureness').attr('checked', hide_sureness ? "checked" : "");
+  $.cookie('hide_sureness', hide_sureness ? 'true' : 'false', cookie_defaults);
 }
 $(function() {
   remaining = $.cookie('remaining').split(',');
+
+  shortcuts_visible = $.cookie('shortcuts_visible') == 'true';
+  refreshShortcutsVisible();
+
+  autoplay = $.cookie('autoplay') == 'true';
+  if (autoplay) {
+    $('#autoplay').attr('checked', 'checked');
+  }
+
+  refreshHideSureness($.cookie('hide_sureness') == 'true');
+
   if ($.cookie('heard') == 'true') {
     setHeard();
   }
@@ -106,9 +118,12 @@ $(function() {
   $(document).keydown(function(ev) {
     switch (ev.which) {
       case 76:
-        listen(ev); break;
+        listen(ev);
+        break;
       case 78:
-        next(ev); break;
+      case 13:
+        next(ev);
+        break;
       case 49:
         $('#stimulus_top').click();
         break;
@@ -116,35 +131,58 @@ $(function() {
         $('#stimulus_bottom').click();
         break;
     }
-    // 'l' == 76
-    // 'n' == 78
-    // '1' == 49
-    // '2' == 50
-    // console.log(ev.which, ev.which === '13', ev.which === 13);
+    // 'l' == 76, 'n' == 78, '1' == 49, '2' == 50, [enter key] == 13
   });
   $('#shortcuts_button').click(function(ev) {
-    $('#shortcuts').toggle();
-    ev.preventDefault(); // don't jump up to the top for the hash.
+    ev.preventDefault();
+    shortcuts_visible = !shortcuts_visible;
+    refreshShortcutsVisible();
   });
+  $('#autoplay').click(function(ev) {
+    autoplay = $('#autoplay').attr('checked');
+    $.cookie('autoplay', autoplay ? 'true' : 'false', cookie_defaults);
+  });
+  $('#hide_sureness').click(function(ev) {
+    refreshHideSureness($('#hide_sureness').attr('checked'));
+  });
+  if (autoplay && !heard) {
+    var play_label = $('#play_label');
+    play_label.html('3');
+    setTimeout(function() {
+      play_label.html('2');
+      setTimeout(function() {
+        play_label.html('1');
+        setTimeout(function() {
+          play_label.html('');
+          listen(null)
+        }, 600);
+      }, 600);
+    }, 600);
+  }
 });
 </script>
 
 <h2>The experiment</h2>
 
 <div class="page">
-  <div class="play"><a id="play" href="#" title="Click to play"><span class="icon icon-chat2"></span></a></div>
+  <div class="play">
+    <a id="play" href="#" title="Click to play"><span class="icon icon-chat2"></span></a> 
+    <span style="padding-left: 10px;" id="play_label"></span>
+  </div>
   
   <table class="stimuli">
     <tr>
-      <td id="stimulus_1" style="visibility: hidden">{{control_1_value}}</td>
-      <td id="stimulus_2" style="visibility: hidden">{{control_2_value}}</td>
-      <td id="stimulus_3" style="visibility: hidden">
+      <td id="sound_1" style="visibility: hidden" class="control">{{control_1_value}}</td>
+      <td id="sound_2" style="visibility: hidden" class="control">{{control_2_value}}</td>
+      <td id="sound_3" style="visibility: hidden">
         <table class="stimuli_choice">
           <tr>
-            <td><input type="radio" name="{{stimulus_id}}" value="{{stimulus_top}}" id="stimulus_top" /><label for="stimulus_top"> {{stimulus_top}}</label></td>
+            <td><input type="radio" name="{{stimulus_id}}" value="{{stimulus_top}}" id="stimulus_top" /><label for="stimulus_top"> 
+              {{stimulus_top}}</label></td>
           </tr>
           <tr>
-            <td><input type="radio" name="{{stimulus_id}}" value="{{stimulus_bottom}}" id="stimulus_bottom" /><label for="stimulus_bottom"> {{stimulus_bottom}}</label></td>
+            <td><input type="radio" name="{{stimulus_id}}" value="{{stimulus_bottom}}" id="stimulus_bottom" /><label for="stimulus_bottom"> 
+              {{stimulus_bottom}}</label></td>
           </tr>
         </table>
       </td>
@@ -152,13 +190,11 @@ $(function() {
   </table>
   
   <div id="controls" style="visibility: hidden">
-    <table class="slider">
+    <table class="sureness">
       <tr>
-        <td class="label" style="text-align: right">Unsure</td>
-        <td style="text-align: center; padding-top: 0.3ex;">
-          <div id="sureness"></div>
-        </td>
-        <td class="label" style="text-align: left">Very Sure</td>
+        <td class="label right">Unsure</td>
+        <td class="input center"><div id="sureness" class="slider"></div></td>
+        <td class="label left">Very Sure</td>
       </tr>
     </table>
     
@@ -166,17 +202,22 @@ $(function() {
   </div>
 </div>
 
-<a id="shortcuts_button" href="#"><img src="/static/images/keyboard.png" /> Show keyboard shortcuts</a>
+<a id="shortcuts_button" href="#"><img src="/static/images/keyboard.png" /> Show keyboard shortcuts / options</a>
 <div id="shortcuts" style="display: none">
   You can simply press keys to listen and navigate from question to question, and select answers:
   <table>
     <tr><td class="key">L or l</td><td>Listen</td></tr>
-    <tr><td class="key">N or n</td><td>Next</td></tr>
+    <tr><td class="key">N or n or [enter]</td><td>Next</td></tr>
     <tr><td class="key">1</td><td>Select the first option.</td></tr>
     <tr><td class="key">2</td><td>Select the second option.</td></tr>
   </table>
+  <div style="margin-top: 1ex">
+    <input type="checkbox" id="autoplay" /><label for="autoplay"> Automatically play the next stimulus</label>
+  </div>
+  <div style="margin-top: 0.5ex">
+    <input type="checkbox" id="hide_sureness" /><label for="hide_sureness"> Hide the sureness bar</label>
+  </div>
 </div>
-
 
 <table id="progress_footer">
   <td style="width: 80px;" class="center">Progress: </td>

@@ -1,27 +1,9 @@
 <script>
 var stimulus_ids = [{{name_stimulus_id}}, {{email_stimulus_id}}, {{handedness_stimulus_id}}];
-function sendResponses(stimulus_ids) {
-  var done = new Date();
-  var responses = [];
-  $.each(stimulus_ids, function(index, stimulus_id) {
-    var selector = 'input[name=' + stimulus_id + ']';
-    var value = $(selector).val();
-    var type = $(selector).attr('type');
-    if (type === "radio" || type === "checkbox") {
-      // look up the input with a better selector for checkboxes/radio buttons
-      value = $(selector + ':checked').val();
-    }
-    if (value) {
-      responses.push({ stimulus_id: stimulus_id, total_time: (done - page_loaded), value: value });
-    }
-  });
-  $.post('/api/1/responses', JSON.stringify({ responses: responses }));
-}
 $(function() {
   $("#next").click(function() {
     sendResponses(stimulus_ids);
-    $.cookie('action', 'stimulus', cookie_defaults);
-    window.location = '/dichotic/';
+    changeAction('stimulus');
   });
 });
 </script>

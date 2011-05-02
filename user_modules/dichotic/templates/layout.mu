@@ -36,6 +36,48 @@
       $.cookie('remaining', remaining.slice(-2), cookie_defaults);
     });
   });
+  
+  // playSoundChain takes an array: [{id: <soundManagerSoundId>, reveal: <jQuerySelector>}, ... ],
+  //   and a callback, to call when they've all finished.
+  function playSoundChain(interval, callback, sound_reveals) {
+    var sound_id = sound_reveals[0].id;
+    var reveal = sound_reveals[0].reveal;
+    var next_sound_reveals = sound_reveals.slice(1);
+    soundManager.play(sound_id, {
+      onfinish: function() {
+        $(reveal).css({visibility: 'visible'});
+        if (next_sound_reveals.length > 0) {
+          setTimeout(function() {
+            playSoundChain(interval, callback, next_sound_reveals);
+          }, interval);
+        }
+        else if (callback) {
+          callback();
+        }
+      }
+    });
+  }
+  function changeAction(action) {
+    $.cookie('action', action, cookie_defaults);
+    window.location = '/dichotic/';
+  }
+  function sendResponses(stimulus_ids) {
+    var done = new Date();
+    var responses = [];
+    $.each(stimulus_ids, function(index, stimulus_id) {
+      var selector = 'input[name=' + stimulus_id + ']';
+      var value = $(selector).val();
+      var type = $(selector).attr('type');
+      if (type === "radio" || type === "checkbox") {
+        // look up the input with a better selector for checkboxes/radio buttons
+        value = $(selector + ':checked').val();
+      }
+      if (value) {
+        responses.push({ stimulus_id: stimulus_id, total_time: (done - page_loaded), value: value });
+      }
+    });
+    $.post('/api/1/responses', JSON.stringify({ responses: responses }));
+  }
   </script>
 </head>
 <body>

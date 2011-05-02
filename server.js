@@ -137,8 +137,8 @@ var dichotic_stimuli_controls = JSON.parse(fs.readFileSync(path.join(__dirname, 
 // [
 //   {
 //     "category": "affixes_consonants",
-//     "left": "lock",
-//     "right": "clock"
+//     "left": {file: "lock", value: "lock"},
+//     "right": ...
 //   },
 //   ...
 var dichotic_stimuli_pairs_list = JSON.parse(fs.readFileSync(path.join(__dirname, 'user_modules/dichotic/pairs.json'))) // len: 166
@@ -219,9 +219,13 @@ function _getUserIdFromRequest(req, res, cookies, callback) {
   return _createUser(req.client.remoteAddress, req.headers['user-agent'], cookies, callback)
 }
 var dichotic_actions = {
-  intro: function(req, res, state) {
+  intro_1: function(req, res, state) {
     addHtmlHead(res)
-    mu.render(['layout.mu', 'intro.mu'], {user_id: state.user_id}).pipe(res)
+    mu.render(['layout.mu', 'intro_1.mu'], {user_id: state.user_id}).pipe(res)
+  },
+  intro_2: function(req, res, state) {
+    addHtmlHead(res)
+    mu.render(['layout.mu', 'intro_2.mu'], {user_id: state.user_id}).pipe(res)
   },
   name: function(req, res, state) {
     addHtmlHead(res)
@@ -270,6 +274,7 @@ var dichotic_actions = {
     })
   },
   debrief: function(req, res, state) {
+    addHtmlHead(res)
     mu.render(['layout.mu', 'debrief.mu'], {}).pipe(res)
   }
 }
@@ -305,27 +310,8 @@ function dichotic(req, res, action) {
       state.remaining = state.remaining.split(',')
     }
     state.user_id = user_id // don't let the user lie about their user_id
-    
-    // state.count = parseInt() || 0
 
-    // if (cookie_state.action === 'intro') {
-    //   state_name = 'intro';
-    // }
-    // else if (count < 100) {
-    //   // var new_count = count + 1
-    //   // console.log("setting new_count to: " + new_count)
-    //   // cookies.set('count', new_count)
-    //   state_name = 'question';
-    // }
-    // else {
-    //   state_name = 'debrief';
-    // }
-    
-    // if (state.action == 'stimuli' && state.remaining == ) {
-    //   
-    // }
-
-    dichotic_action = dichotic_actions[state.action] || dichotic_actions["intro"]
+    dichotic_action = dichotic_actions[state.action] || dichotic_actions["intro_1"]
     dichotic_action(req, res, state)
   })
 }
@@ -345,9 +331,7 @@ function api(req, res, action) {
       
       var responses = JSON.niceParse(postData, {})['responses']
       // { responses: 
-      //   [ { stimulus_id: 85, total_time: 58987, value: 'ERT' },
-      //     { stimulus_id: 86, total_time: 58987, value: 'OIU' },
-      //     { stimulus_id: 87, total_time: 58987, value: 'right' } ] }
+      //   [ { stimulus_id: 85, total_time: 58987, value: 'ERT' }, ...
       responses.forEach(function(response) {
         querySql("INSERT INTO responses (user_id, stimulus_id, total_time, sureness, value, details) VALUES ($1, $2, $3, $4, $5, $6)",
           [user_id, response.stimulus_id, response.total_time || null, response.sureness || null, response.value || null, response.details || null])

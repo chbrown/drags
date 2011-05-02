@@ -165,12 +165,10 @@ table.stimuli {
 table.stimuli td {
   text-align: center;
   vertical-align: middle;
-}
-#stimulus_1, #stimulus_2 {
-  font-size: 110%;  
-}
-#stimulus_1, #stimulus_2, #stimulus_3 {
   width: 33%;
+}
+table.stimuli td.control {
+  font-size: 110%;  
 }
 table.stimuli_choice {
   margin: 0 auto;
@@ -179,24 +177,29 @@ table.stimuli_choice td {
   font-size: 110%;
   text-align: left;
   padding: 3px;
+  width: auto;
 }
-table.stimuli_choice td input {
+/*table.stimuli_choice td input {
   
-}
-table.slider {
+}*/
+table.sureness {
   width: 100%;
   margin: 0 auto 10px;
 }
-table.slider td.label {
+table.sureness td.label {
   width: 15%;
-  font-size: 85%;
   vertical-align: top;
+  font-size: 90%;
 }
-  
-#sureness {
-  font-size: 70%;
+table.sureness td.input {
+  padding-top: 0.75ex;
+  font-size: 12px;
+}
+.slider {
   margin: 0 1em;
 }
+
+
 #debug {
   position: fixed;
   top: 0;
@@ -206,7 +209,7 @@ table.slider td.label {
   font-variant: small-caps;
 }
 #next {
-  font-size: 70%;
+/*  font-size: 70%;*/
   margin: 2ex;
 }
 
