@@ -87,7 +87,7 @@ function refreshShortcutsVisible() {
 }
 function refreshHideSureness(hide_sureness) {
   // var visibility = ;
-  $('.sureness').css({visibility: hide_sureness ? "hidden" : "visible"});
+  $('.sureness').css({visibility: hide_sureness ? "hidden" : ""});
   $('#hide_sureness').attr('checked', hide_sureness ? "checked" : "");
   $.cookie('hide_sureness', hide_sureness ? 'true' : 'false', cookie_defaults);
 }
