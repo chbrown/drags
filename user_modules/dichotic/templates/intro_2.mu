@@ -107,7 +107,7 @@ Some of the questions will ask about the gender of the speaker, not the word; in
       </tr>
     </table>
     
-    <input type="button" value="Next" id="mf_next_dummy" /> &nbsp; <span id="bVt_next_dummy_text" class="small"></span>
+    <input type="button" value="Next" id="mf_next_dummy" /> &nbsp; <span id="mf_next_dummy_text" class="small"></span>
   </div>
 </div>
 

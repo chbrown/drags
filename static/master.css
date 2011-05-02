@@ -83,7 +83,7 @@ table{
 body {
   font-family: Garamond, Georgia, serif;
   background: url('/static/images/bg-noise.gif') repeat top left;
-  font-size: 110%;
+  font-size: 18px;
   line-height: 1.2;
 }
 /*h1 {

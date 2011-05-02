@@ -17,11 +17,11 @@ $(function() {
   <table class="twocol padcell">
     <tr>
       <td class="right">Name</td>
-      <td class="left" style="width: 50%"><input type="text" name="{{name_stimulus_id}}" /></td>
+      <td class="left" style="width: 50%"><input type="text" name="{{name_stimulus_id}}" style="width: 20em" /></td>
     </tr>
     <tr>
       <td class="right">Email</td>
-      <td class="left"><input type="text" name="{{email_stimulus_id}}" /></td>
+      <td class="left"><input type="text" name="{{email_stimulus_id}}" style="width: 20em" /></td>
     </tr>
     <tr>
       <td class="right">What hand do you write with?</td>
