@@ -55,7 +55,7 @@ function next(ev) {
     var response_data = JSON.stringify({ responses: [{ 
       stimulus_id: stimulus_id, total_time: (done - page_loaded), value: value, sureness: sureness
     }] });
-    console.log('Sending ajax response: ' + value);
+    //console.log('Sending ajax response: ' + value);
     $.ajax({
       url: '/api/1/responses',
       type: 'POST',
