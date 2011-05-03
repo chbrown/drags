@@ -266,8 +266,10 @@ var dichotic_actions = {
       stimulus_top: pair_order[0],
       stimulus_bottom: pair_order[1]
     }
-    querySql("INSERT INTO stimuli (user_id, survey_id, name, value) VALUES \
-      ($1, 1, $2, $3) RETURNING id", [state.user_id, pair.category, context.stimulus_file], function(stimulus_id_results) {
+    stimulus_details = controls[0].file + ',' + controls[1].file
+    querySql("INSERT INTO stimuli (user_id, survey_id, name, value, details) \
+      VALUES ($1, 1, $2, $3, $4) RETURNING id", [state.user_id, pair.category, context.stimulus_file, stimulus_details], 
+      function(stimulus_id_results) {
         context.stimulus_id = stimulus_id_results.rows[0].id
         
         mu.render(['layout.mu', 'stimulus.mu'], context).pipe(res)

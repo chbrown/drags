@@ -46,7 +46,7 @@
     soundManager.play(sound_id, {
       onfinish: function() {
         $(reveal).css({visibility: 'visible'});
-        if (next_sound_reveals.length > 0) {
+        if (next_sound_reveals.length > 0 && next_sound_reveals[0]) {
           setTimeout(function() {
             playSoundChain(interval, callback, next_sound_reveals);
           }, interval);
