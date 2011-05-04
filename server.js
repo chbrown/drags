@@ -213,10 +213,11 @@ function _getUserForKey(ip, user_agent, cookies, callback) {
 function _getUserIdFromRequest(req, res, cookies, callback) {
   // callback = function(err, user_id) { ... }
   var ticket_cookie = cookies.get('ticket')
+  var ip = req.headers['x-real-ip'] || req.client.remoteAddress
   if (ticket_cookie) {
-    return _getUserForKey(req.client.remoteAddress, req.headers['user-agent'], cookies, callback)
+    return _getUserForKey(ip, req.headers['user-agent'], cookies, callback)
   }
-  return _createUser(req.client.remoteAddress, req.headers['user-agent'], cookies, callback)
+  return _createUser(ip, req.headers['user-agent'], cookies, callback)
 }
 var dichotic_actions = {
   intro_1: function(req, res, state) {
@@ -352,6 +353,10 @@ function router(req, res) {
     // discard the version, for now // console.log('API: ' + m[1])
     api(req, res, m[1])
   }
+  else if (req.url.match(/^\/test$/)) {
+    res.end(util.inspect(req, false, null))
+    // console.log(req.headers['x-real-ip'])
+  }
   else if (m = req.url.match(/^\/([^\/]+)(\/(.*))?$/)) {
     if (m[1] === 'dichotic') {
       dichotic(req, res, m[3])
@@ -359,9 +364,6 @@ function router(req, res) {
     else {
       res.end('That module is not yet supported.')
     }
-  }
-  else if (req.url.match(/^\/test/)) {
-    res.end(util.inspect(req, false, null))
   }
   else {
     // addHtmlHead(res)
