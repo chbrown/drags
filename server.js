@@ -354,7 +354,10 @@ var dichotic_actions = {
           else
             console.log(row.response_value, left, right)
           
-          var vals = [row.user_id, row.stimulus_name, choice, row.sureness, row.total_time]
+          // I did a silly sureness || null when uploading responses, so this fixes that:
+          var sureness = row.sureness || 0
+          
+          var vals = [row.user_id, row.stimulus_name, choice, sureness, row.total_time]
           if (format == 'csv')
             res.write(vals.join(',') + '\n')
           else
