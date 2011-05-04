@@ -283,8 +283,8 @@ var dichotic_actions = {
     mu.render(['layout.mu', 'debrief.mu'], {}).pipe(res)
   },
   results: function(req, res) {
-    addTextHead(res)
 
+    var format = req.url.match(/[?&]format=csv/) ? 'csv' : 'html'
     var user_ids_qs = req.url.match(/[?&]user_ids=([^&]+)/)
     var user_ids = [0]
     var override = 1
@@ -292,35 +292,79 @@ var dichotic_actions = {
       user_ids = user_ids_qs[1].split(',')
       if (user_ids.length > 0) {
         override = 0
+        user_ids = user_ids.map(function(user_id) { return parseInt(user_id) })
       }
-      user_ids = user_ids.map(function(user_id) { return parseInt(user_id) })
+      else {
+        users_ids = [0]
+      }
+    }
+    
+    // var cols = ['user_id', 
+    //   'total_time', 'sureness', 
+    //   'response_value', 'response_details', 
+    //   'stimulus_name', 'stimulus_value', 'stimulus_details']
+    var cols = ['user_id', 'category', 'choice', 'sureness', 'time']
+
+    // var cols = ['user_id', 'category', 'choice', 'sureness', 'time']
+
+    // header
+    if (format == 'csv') {
+      addTextHead(res)
+      res.write(cols.join(',') + '\n')
+    }
+    else {
+      addHtmlHead(res)
+      res.write('<table>\n')
+      res.write('<tr><th>' + cols.join('</th><th>') + '</th></tr>\n')
     }
 
-    res.write('user_id, responses_total_time, responses_sureness, responses_value, responses_details, stimuli_name, stimuli_value, stimuli_details\n')
-
     var in_clause = '(' + user_ids.join(',') + ')'
-    querySql("SELECT users.id AS user_id, responses.total_time, responses.sureness, responses.value AS responses_value, responses.details AS responses_details, \
-      stimuli.name, stimuli.value AS stimuli_value, stimuli.details AS stimuli_details \
+    querySql("SELECT users.id AS user_id, \
+      responses.total_time, responses.sureness, \
+      responses.value AS response_value, responses.details AS response_details, \
+      stimuli.name AS stimulus_name, stimuli.value AS stimulus_value, \
+      stimuli.details AS stimulus_details \
       FROM responses \
       INNER JOIN stimuli ON stimuli.id = responses.stimulus_id \
       INNER JOIN users ON users.id = responses.user_id \
-      WHERE users.id IN (" + user_ids.join(',') + ") OR 1 = $1 \
+      WHERE (users.id IN (" + user_ids.join(',') + ") OR 1 = $1) \
+        AND stimuli.name != 'general' \
       ORDER BY users.id ASC, responses.created DESC", [override],
       function(response_results) {
-        // console.log(response_results)
-        // console.inspect(response_results.rows[0])
         response_results.rows.forEach(function(row) {
-          res.write([row.user_id, row.total_time, row.sureness, row.responses_value, row.responses_details, 
-            row.name, row.stimuli_value, row.stimuli_details].join(',') + '\n')
+          var left = 'na'
+          var right = 'na'
+          if (row.stimulus_name == 'male_female') {
+            var matches = row.stimulus_value.match(/\w+_([mf])-l\+\w+_([mf])-r/)
+            // if (!matches) console.log(row.stimulus_value)
+            left = matches[1] == 'm' ? 'male' : 'female'
+            right = matches[2] == 'm' ? 'male' : 'female'
+          }
+          else {
+            var matches = row.stimulus_value.match(/(\w+)-l\+(\w+)-r/)
+            // if (!matches) console.log(row.stimulus_value)
+            left = matches[1]
+            right = matches[2]
+          }
+          var choice = '?'
+          if (row.response_value == left)
+            choice = 'L'
+          else if (row.response_value == right)
+            choice = 'R'
+          else
+            console.log(row.response_value, left, right)
+          
+          var vals = [row.user_id, row.stimulus_name, choice, row.sureness, row.total_time]
+          if (format == 'csv')
+            res.write(vals.join(',') + '\n')
+          else
+            res.write('<tr><td>' + vals.join('</td><td>') + '</td></tr>\n')
         })
-        res.end() //'\nEOF\n'
-        // context.stimulus_id = stimulus_id_results.rows[0].id
-        
-        // mu.render(['layout.mu', 'stimulus.mu'], context).pipe(res)
+        if (format == 'html') {
+          res.write('</table>\n')
+        }
+        res.end()
     })
-    
-    
-    
   }
 }
 
@@ -390,8 +434,11 @@ function api(req, res, action) {
       // { responses: 
       //   [ { stimulus_id: 85, total_time: 58987, value: 'ERT' }, ...
       responses.forEach(function(response) {
+        var sureness = response.sureness
+        if (sureness === undefined)
+          sureness = null
         querySql("INSERT INTO responses (user_id, stimulus_id, total_time, sureness, value, details) VALUES ($1, $2, $3, $4, $5, $6)",
-          [user_id, response.stimulus_id, response.total_time || null, response.sureness || null, response.value || null, response.details || null])
+          [user_id, response.stimulus_id, response.total_time || null, sureness, response.value || null, response.details || null])
       })
     
       addTextHead(res).end('success')
