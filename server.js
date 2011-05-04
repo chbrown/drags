@@ -1,4 +1,4 @@
-// `npm install pg cookies formidable`
+// `npm install pg cookies formidable hashlib`
 // Mu (git://github.com/chbrown/mu.git)
 var sys = require('sys')
 var fs = require('fs')
@@ -7,6 +7,7 @@ var http = require('http')
 var util = require('util')
 var pg = require('pg')
 var mu = require('mu')
+var hashlib = require('hashlib')
 var querystring = require('querystring')
 var formidable = require('formidable')
 var Uuid = require('./lib/uuid')
@@ -18,6 +19,7 @@ var repl = require('repl')
 // ARGV[0] is "node" and [1] is the name of this script and [2] is the name of the first command line argument
 var config_file = (process.ARGV[2] && process.ARGV[2].substr(-5) == '.json') ? process.ARGV[2] : 'config.json'
 var CONFIG = JSON.parse(fs.readFileSync(config_file));
+console.inspect = function (x) { return console.log(util.inspect(x, false, null)) }
 
 JSON.niceParse = function(str, default_obj) {
   try { return JSON.parse(str) }
@@ -279,6 +281,46 @@ var dichotic_actions = {
   debrief: function(req, res, state) {
     addHtmlHead(res)
     mu.render(['layout.mu', 'debrief.mu'], {}).pipe(res)
+  },
+  results: function(req, res) {
+    addTextHead(res)
+
+    var user_ids_qs = req.url.match(/[?&]user_ids=([^&]+)/)
+    var user_ids = [0]
+    var override = 1
+    if (user_ids_qs) {
+      user_ids = user_ids_qs[1].split(',')
+      if (user_ids.length > 0) {
+        override = 0
+      }
+      user_ids = user_ids.map(function(user_id) { return parseInt(user_id) })
+    }
+
+    res.write('user_id, responses_total_time, responses_sureness, responses_value, responses_details, stimuli_name, stimuli_value, stimuli_details\n')
+
+    var in_clause = '(' + user_ids.join(',') + ')'
+    querySql("SELECT users.id AS user_id, responses.total_time, responses.sureness, responses.value AS responses_value, responses.details AS responses_details, \
+      stimuli.name, stimuli.value AS stimuli_value, stimuli.details AS stimuli_details \
+      FROM responses \
+      INNER JOIN stimuli ON stimuli.id = responses.stimulus_id \
+      INNER JOIN users ON users.id = responses.user_id \
+      WHERE users.id IN (" + user_ids.join(',') + ") OR 1 = $1 \
+      ORDER BY users.id ASC, responses.created DESC", [override],
+      function(response_results) {
+        // console.log(response_results)
+        // console.inspect(response_results.rows[0])
+        response_results.rows.forEach(function(row) {
+          res.write([row.user_id, row.total_time, row.sureness, row.responses_value, row.responses_details, 
+            row.name, row.stimuli_value, row.stimuli_details].join(',') + '\n')
+        })
+        res.end() //'\nEOF\n'
+        // context.stimulus_id = stimulus_id_results.rows[0].id
+        
+        // mu.render(['layout.mu', 'stimulus.mu'], context).pipe(res)
+    })
+    
+    
+    
   }
 }
 
@@ -313,6 +355,18 @@ function dichotic(req, res, action) {
       state.remaining = state.remaining.split(',')
     }
     state.user_id = user_id // don't let the user lie about their user_id
+    
+    // /dichotic/results?key=xxxxxxxxxxxxxxx&user_ids=11,17,2,15,6,3,14,9
+    if (action && action.match(/^results/)) {
+      var key_qs = req.url.match(/[?&]key=([^&]+)/)
+      if (key_qs && key_qs[1]) {
+        // almost ashamed of this hack, it's so hacky
+        var key_sha512 = hashlib.sha256(key_qs[1])
+        if (key_sha512.slice(4) == '5cc607b03a98e337f232b5524c8ef558144d073add6ccd45592eba72b7d5') {
+          state.action = 'results'
+        }
+      }
+    }
 
     dichotic_action = dichotic_actions[state.action] || dichotic_actions["intro_1"]
     dichotic_action(req, res, state)
