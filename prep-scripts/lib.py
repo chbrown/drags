@@ -125,7 +125,7 @@ def align_waves(mono_wav_l, mono_wav_r, stereo_wave_out, show_graphs=False):
     sample_pair = map(read_wave_to_sample_list, wave_pair)
     
     max_window = 500
-    avg_window = 10000
+    avg_window = 11000
     smoothed_pair = [
         abs_max_smooth_samples(sample_pair[0], max_window, avg_window),
         abs_max_smooth_samples(sample_pair[1], max_window, avg_window)]

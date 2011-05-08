@@ -303,7 +303,7 @@ var dichotic_actions = {
     //   'total_time', 'sureness', 
     //   'response_value', 'response_details', 
     //   'stimulus_name', 'stimulus_value', 'stimulus_details']
-    var cols = ['user_id', 'category', 'choice', 'sureness', 'time']
+    var cols = ['user_id', 'category', 'subcategory', 'choice', 'sureness', 'time']
 
     // var cols = ['user_id', 'category', 'choice', 'sureness', 'time']
 
@@ -354,12 +354,20 @@ var dichotic_actions = {
           else
             console.log(row.response_value, left, right)
           
-          // I did a silly sureness || null when uploading responses, so this fixes that:
+          // I did a silly (sureness || null) when uploading responses, so this fixes that:
           var sureness = row.sureness || 0
+          
+          var supercategory = 'low'
+          if (row.stimulus_name.match(/numbers/)) {
+            supercategory = 'high'
+          }
+          else if (row.stimulus_name == 'male_female') {
+            supercategory = 'gender'
+          }
           
           var vals = [row.user_id, row.stimulus_name, choice, sureness, row.total_time]
           if (format == 'csv')
-            res.write(vals.join(',') + '\n')
+            res.write(vals.join('\t') + '\n')
           else
             res.write('<tr><td>' + vals.join('</td><td>') + '</td></tr>\n')
         })
