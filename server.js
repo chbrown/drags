@@ -366,7 +366,7 @@ var dichotic_actions = {
             supercategory = 'gender'
           }
           
-          var vals = [row.user_id, row.stimulus_name, choice, sureness, row.total_time]
+          var vals = [row.user_id, supercategory, row.stimulus_name, choice, sureness, row.total_time]
           if (format == 'csv')
             res.write(vals.join(separator) + '\n')
           else
