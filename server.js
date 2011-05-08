@@ -307,10 +307,11 @@ var dichotic_actions = {
 
     // var cols = ['user_id', 'category', 'choice', 'sureness', 'time']
 
+    var separator = '\t' //','
     // header
     if (format == 'csv') {
       addTextHead(res)
-      res.write(cols.join(',') + '\n')
+      res.write(cols.join(separator) + '\n')
     }
     else {
       addHtmlHead(res)
@@ -367,7 +368,7 @@ var dichotic_actions = {
           
           var vals = [row.user_id, row.stimulus_name, choice, sureness, row.total_time]
           if (format == 'csv')
-            res.write(vals.join('\t') + '\n')
+            res.write(vals.join(separator) + '\n')
           else
             res.write('<tr><td>' + vals.join('</td><td>') + '</td></tr>\n')
         })
