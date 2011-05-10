@@ -359,7 +359,7 @@ var dichotic_actions = {
           var sureness = row.sureness || 0
           
           var supercategory = 'low'
-          if (row.stimulus_name.match(/numbers/)) {
+          if (row.stimulus_name.match(/numbers/) || row.stimulus_name == 'reverses') {
             supercategory = 'high'
           }
           else if (row.stimulus_name == 'male_female') {
