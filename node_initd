@@ -6,7 +6,7 @@ export PATH=/usr/local/bin:/usr/bin:$PATH
 start() {
   echo Starting Node
   cd $CURR_PATH
-  nohup node server.js config-linode.json --tag drags-server >> log/node_out.log 2>> log/node_error.log &
+  nohup node drags.js config-linode.json >> log/node_out.log 2>> log/node_error.log &
   pgrep node -n > log/node.pid
   echo Done starting Node
 }

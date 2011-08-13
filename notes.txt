@@ -13,3 +13,16 @@ function greet() {
   if (greeting)
     $('#greeting').attr("title", greeting);
 }
+
+
+
+
+s = """
+Stimulus,A,B,C,D
+"Practice 1.m4v",f-wi0.jpg,f-wo135.jpg,wi-f45.jpg,wo-f90.jpg
+"Practice 2.m4v",c-fi180.jpg,c-fo45.jpg,fi-c0.jpg,fo-c225.jpg
+"Item 1.m4v",d-co0.jpg,d-ci315.jpg,ci-d45.jpg,co-d90.jpg
+"""
+
+import csv
+[x for x in csv.DictReader(s.split('\n'))]

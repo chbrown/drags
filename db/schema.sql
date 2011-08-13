@@ -35,7 +35,8 @@ CREATE TABLE stimuli (
     survey_id integer NOT NULL references surveys(id),
     name text NOT NULL,
     value text NOT NULL,
-    created timestamp DEFAULT current_timestamp
+    details text,
+    created timestamp DEFAULT current_timestamp,
 );
 
 CREATE TABLE responses (
