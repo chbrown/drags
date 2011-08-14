@@ -4,3 +4,4 @@ bin/
 *.pyc
 backups/
 node_modules/
+log/
