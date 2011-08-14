@@ -4,10 +4,8 @@
 <p>After each video, you will be asked to answer a multiple choice question.</p>
 <p>Requirements:</p>
 <ul>
-  <li>You must have cookies enabled.</li>
+  <li>You must have both javascript and cookies enabled. This is most likely the case already.</li>
   <li>A recent browser. Such as the latest Chrome or Safari. Internet Explorer probably won't cut it.</li>
 </ul>
 
-<div class="center bold" style="margin: 1em">
-  <p><a href="#" id="next">Next &raquo;</a></p> 
-</div>
+<a href="#" id="next" class="center bold">Next &raquo;</a>

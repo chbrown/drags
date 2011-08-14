@@ -1,10 +1,5 @@
 <h2>Instructions</h2>
 
-<p>(is this page necessary?)</p>
+<p>(Any instructions could go here; if there aren't any, I can take this page out.)</p>
 
-<div class="center bold" style="margin: 1em">
-  <p><a href="#" id="next">Next &raquo;</a></p> 
-</div>
-
-<script>
-</script>
+<a href="#" id="next" class="center bold">Next &raquo;</a>
