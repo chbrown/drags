@@ -138,3 +138,7 @@ $.cookieSetup({
   expires: 31,
   path: '/'
 });
+
+if (console === undefined) {
+  console.log = function() { }; // just swallow it
+}

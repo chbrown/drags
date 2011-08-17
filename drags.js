@@ -1,6 +1,3 @@
-// npm install http://github.com/chbrown/cookies/tarball/master
-// npm install http://github.com/chbrown/amulet/tarball/master
-// npm install pg
 var sys = require('sys'),
     fs = require('fs'),
     path = require('path'),
@@ -136,20 +133,58 @@ function _getUserIdFromRequest(req, res, callback) {
 
 
 
+// for line in s.split('\n'):
+//   parts = line.split(';')
+//   print '["' + '","'.join(parts) + '"],'
 
+  // stimuli A B C D correct
+var pctc_files = [
+  ["wi-f","f-wi0","f-wo135","wi-f45","wo-f90","c"],
+  ["c-fi","c-fi180","c-fo45","fi-c0","fo-c225","a"],
+  ["ci-d","d-co0","d-ci315","ci-d45","co-d90","c"],
+  ["do-w","di-w45","w-di315","do-w180","w-do0","c"],
+  ["co-w","w-co0","ci-w315","w-ci45","co-w180","d"],
+  ["wi-d","d-wi315","wi-d45","d-wo90","wo-d0","b"],
+  ["w-ci","co-w0","w-co90","ci-w135","w-ci225","d"],
+  ["c-di","c-do90","di-c315","c-di0","do-c135","c"],
+  ["co-d","co-d135","d-co225","d-ci270","ci-d0","a"],
+  ["wo-d","d-wi0","d-wo315","wo-d90","wi-d135","c"],
+  ["c-do","c-di270","do-c180","di-c135","c-do315","d"],
+  ["w-di","w-do0","w-di90","di-w270","do-w225","b"],
+  ["ci-w","w-co270","ci-w135","co-w315","w-ci180","b"],
+  ["wo-c","wi-c90","wo-c270","c-wo135","c-wi0","b"],
+  ["do-c","di-c0","do-c45","c-do315","c-di0","b"],
+  ["wo-c","wo-c180","c-wi270","c-wo225","wi-c225","a"],
+  ["d-wi","wi-d225","d-wo225","d-wi225","wo-d180","c"],
+  ["di-w","w-do0","do-w45","w-di0","di-w315","d"],
+  ["w-do","w-do0","do-w0","w-di45","di-w0","a"],
+  ["d-wo","wi-d225","d-wo225","wo-d270","d-wi180","b"],
+  ["d-ci","co-d270","ci-d180","d-co225","d-ci225","d"],
+  ["wi-c","wi-c0","wo-c0","c-wo0","c-wi315","a"],
+];
 
-var pctc_stimuli = [
-  {'name': 'Practice-1.m4v',     'a': 'f-wi0.jpg',   'b': 'f-wo135.jpg', 'c': 'wi-f45.jpg', 'd': 'wo-f90.jpg'}, 
-  {'name': 'Practice-2.m4v',     'a': 'c-fi180.jpg', 'b': 'c-fo45.jpg',  'c': 'fi-c0.jpg',  'd': 'fo-c225.jpg'}, 
-  {'name': 'Item-1.m4v',         'a': 'd-co0.jpg',   'b': 'd-ci315.jpg', 'c': 'ci-d45.jpg', 'd': 'co-d90.jpg'},
-  {'name': 'LsdScene_512kb.mp4', 'a': 'd-co0.jpg',   'b': 'd-ci315.jpg', 'c': 'ci-d45.jpg', 'd': 'co-d90.jpg'},
-].map(function(stimulus) {
-  stimulus.url = '/surveys/pctc/' + stimulus.name;
-  ['a', 'b', 'c', 'd'].forEach(function(choice) {
-    stimulus[choice] = '/surveys/pctc/' + stimulus[choice];
-  });
-  return stimulus;
+var actual_files = ["c-wi.m4v", "c-wo.m4v", "ci-d.m4v", "ci-w.m4v", "co-d.m4v", "co-w.m4v", "d-ci.m4v", "d-co.m4v", "d-wi.m4v", "d-wo.m4v",
+"f-co.m4v", "w-ci.m4v", "w-co.m4v", "w-di.m4v", "w-do.m4v", "w-fi.m4v", "w-fo.m4v", "wi-c.m4v", "wi-d.m4v", "wo-c.m4v",
+"wo-d.m4v"];
+
+var pctc_stimuli = [];
+pctc_files.forEach(function(parts, index) {
+  var base_url = '/surveys/pctc/';
+  // for now, we only register stimuli that we have files for.
+  if (actual_files.indexOf(parts[0] + '.m4v') > -1) {
+    var stimulus = {
+      id: index,
+      stimulus: base_url + parts[0] + '.m4v',
+      a: base_url + parts[1] + '.jpg',
+      b: base_url + parts[2] + '.jpg',
+      c: base_url + parts[3] + '.jpg',
+      d: base_url + parts[4] + '.jpg',
+      correct: parts[5]
+    };
+    pctc_stimuli.push(stimulus);
+  }
 });
+console.log("Loading " + pctc_stimuli.length + " stimuli"); 
 
 
 function pctc_transducer(state) {
@@ -164,11 +199,11 @@ function pctc_transducer(state) {
     state.label = 'show_video';
   }
   else if (state.label == 'show_video') { // this might be merged out.
-    state.index++;
     state.label = 'show_choices';
   }
   else if (state.label == 'show_choices') {
-    if (state.index > pctc_stimuli.length) { // pctc_stimuli.length == 12?
+    state.index++;
+    if (state.index >= pctc_stimuli.length) {
       state.label = 'conclusion';
     }
     else {
@@ -195,7 +230,7 @@ function pctc_renderState(req, res, state, full) {
   }
   if (state.label == 'show_choices') {
     stimulus = pctc_stimuli[state.index];
-    context['id'] = stimulus.name;
+    context['id'] = stimulus.id;
     context['choices'] = ['a', 'b', 'c', 'd'].map(function(prop) {
       return {value: prop, url: stimulus[prop]};
     });
@@ -250,10 +285,10 @@ function pctc_router(req, res) {
             // if (response.sureness === undefined) { response.sureness = null; }
             if (response.total_time === undefined) { response.total_time = -1; }
             if (response.value === undefined) { response.value = ''; }
-            if (response.details === undefined) { response.details = ''; }
+            if (response.details === undefined) { response.details = null; }
             // response.sureness,
             querySql("INSERT INTO responses (user_id, stimulus_id, total_time, value, details) \
-              VALUES ($1, $2, $3, $4, $5, $6);",
+              VALUES ($1, $2, $3, $4, $5);",
               [user_id, response.stimulus_id, response.total_time, response.value, response.details]);
           });
         }
@@ -306,3 +341,10 @@ console.log('Server running at:', CONFIG.server.socket);
 // http.createServer(router).listen(CONFIG.server.port, CONFIG.server.host)
 // console.log('Server running at http://' + CONFIG.server.host + ':' + CONFIG.server.port + '/')
 
+
+// process.on('uncaughtException', function (err) {
+//   // // Log it! // 
+//   console.dir(err);
+//   // // Make sure you still exit. // 
+//   process.exit(1);
+// });

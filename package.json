@@ -1,0 +1,22 @@
+{
+  "name": "drags",
+  "version": "0.1.0",
+  "description": "Digital Research-Assistant Graduate Student",
+  "keywords" : ["drags", "surveys"],
+  "homepage": "https://github.com/chbrown/drags",
+  "repository" : {
+    "type" : "git",
+    "url" : "git://github.com/chbrown/drags.git"
+  },
+  "author" : "Christopher Brown <io@henrian.com>",
+  "main" : "drags.js",
+  "dependencies" : {
+    "amulet": "http://github.com/chbrown/amulet/tarball/master",
+    "cookies": "http://github.com/chbrown/cookies/tarball/master",
+    "pg": "0.x.x"
+  },
+  "scripts" : { 
+    "test" : "node tests.js",
+  },
+  "engines" : { "node": ">= 0.4.10" }
+}

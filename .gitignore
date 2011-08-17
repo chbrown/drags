@@ -5,3 +5,5 @@ bin/
 backups/
 node_modules/
 log/
+surveys/
+
