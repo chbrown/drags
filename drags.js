@@ -336,10 +336,10 @@ function router(req, res) {
   }
 }
 
-http.createServer(router).listen(CONFIG.server.socket);
-console.log('Server running at:', CONFIG.server.socket);
-// http.createServer(router).listen(CONFIG.server.port, CONFIG.server.host)
-// console.log('Server running at http://' + CONFIG.server.host + ':' + CONFIG.server.port + '/')
+// http.createServer(router).listen(CONFIG.server.socket);
+// console.log('Server running at:', CONFIG.server.socket);
+http.createServer(router).listen(CONFIG.server.port, CONFIG.server.host)
+console.log('Server running at http://' + CONFIG.server.host + ':' + CONFIG.server.port + '/')
 
 
 // process.on('uncaughtException', function (err) {

@@ -1,6 +1,8 @@
 {
   "database": "pg://postgres@localhost/drags",
   "server": {
+    "host": "localhost",
+    "port": 4181,
     "socket": "node.sock"
   },
   "datetime_format": "FMMonth FMDD, YYYY, FMHH:MI am"

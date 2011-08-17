@@ -1,6 +1,6 @@
 {
   "name": "drags",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Digital Research-Assistant Graduate Student",
   "keywords" : ["drags", "surveys"],
   "homepage": "https://github.com/chbrown/drags",
@@ -16,7 +16,7 @@
     "pg": "0.x.x"
   },
   "scripts" : { 
-    "test" : "node tests.js",
+    "test" : "node tests.js"
   },
   "engines" : { "node": ">= 0.4.10" }
 }

@@ -36,7 +36,7 @@ CREATE TABLE stimuli (
     name text NOT NULL,
     value text NOT NULL,
     details text,
-    created timestamp DEFAULT current_timestamp,
+    created timestamp DEFAULT current_timestamp
 );
 
 CREATE TABLE responses (
@@ -51,3 +51,4 @@ CREATE TABLE responses (
 );
 
 INSERT INTO surveys (name) VALUES ('dichotic');
+INSERT INTO surveys (name) VALUES ('pctc');

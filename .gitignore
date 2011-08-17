@@ -4,6 +4,7 @@ bin/
 *.pyc
 backups/
 node_modules/
+npm-debug.log
 log/
 surveys/
 
