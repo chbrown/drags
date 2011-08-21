@@ -1,7 +1,12 @@
 {
-  "database": "pg://postgres@localhost/drags",
+  "database": {
+    "type": "mongodb",
+    "host": "127.0.0.1",
+    "port": 17071,
+    "db": "drags"
+  },
   "server": {
-    "host": "localhost",
+    "host": "127.0.0.1",
     "port": 4181,
     "socket": "node.sock"
   },

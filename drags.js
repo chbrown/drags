@@ -2,16 +2,11 @@ var sys = require('sys'),
     fs = require('fs'),
     path = require('path'),
     http = require('http'),
-    pg = require('pg'), 
+    mongodb = require('mongodb'),
+    mongo_helpers = require('./lib/mongo_helpers'),
     Cookies = require('cookies'),
     amulet = require('amulet'); 
 require('./lib/basic');
-
-amulet.root(path.join(__dirname), false); // false means: don't autoparse everything in that directory
-
-Cookies.prototype.defaults = function() {
-  return { expires: new Date().addDays(31), httpOnly: false };
-};
 
 // ARGV[0] is "node" and [1] is the name of this script and [2] is the name of the first command line argument
 var config_file = (process.ARGV[2] && process.ARGV[2].substr(-5) == '.json') ? process.ARGV[2] : 'config.json';
@@ -19,24 +14,20 @@ var CONFIG = JSON.parse(fs.readFileSync(config_file));
 console.inspect = function (x) { return console.log(util.inspect(x, false, null)); };
 var ALPHADEC = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
 
+amulet.root(path.join(__dirname), false); // false means: don't autoparse everything in that directory
 
-function querySql(sql, args, callback, client) {
-  if (client === undefined) {
-    pg.connect(CONFIG.database, function(err, client) {
-      if (err) console.log(err);
-      client.query(sql, args, function(err, result) {
-        if (err) console.log(err);
-        if (callback) callback(result, client);
-      });
-    });
-  }
-  else {
-    client.query(sql, args, function(err, result) {
-      if (err) console.log(err);
-      if (callback) callback(result, client);
-    });
-  }
-}
+Cookies.prototype.defaults = function() {
+  return { expires: new Date().addDays(31), httpOnly: false };
+};
+
+var mongo_server = new mongodb.Server(CONFIG.database.host, CONFIG.database.port, {});
+var mongo_db = new mongodb.Db(CONFIG.database.db, mongo_server);
+var mongo = new mongo_helpers.MongoHelpers();
+mongo_db.open(function(err, client) {
+  if (err) { throw err; }
+  mongo.setClient(client);
+});
+
 function addHtmlHead(res) {
   res.writeHead(200, {"Content-Type": "text/html"});
   return res;
@@ -65,49 +56,34 @@ function waitUntilComplete(req, callback) {
 }
   
 function _createUser(ip, user_agent, cookies, callback) {
-  querySql("INSERT INTO users DEFAULT VALUES RETURNING id", [], function(user_id_result, client) {
-    var user_id = user_id_result.rows[0].id;
-    var ticket = ALPHADEC.sample(32).join('');
-    // let the rest branch off ...
-    querySql("INSERT INTO tickets (user_id, name) VALUES ($1, $2) RETURNING id", [user_id, ticket], function(ticket_id_result) {
-      var ticket_id = ticket_id_result.rows[0].id;
-      querySql("INSERT INTO locations (ticket_id, ip, user_agent) VALUES ($1, $2, $3)", 
-        [ticket_id, ip, user_agent], function() { 
-          // don't need to do anything
-      }, client);
-    }, client);
-    // ... all we need is the user_id
-    cookies.set('ticket', ticket);
-    // cookies.set('action', 'intro')
-    // cookies.set('remaining', '')
-    // cookies.set('heard', 'false')
-    callback(undefined, user_id);
+  var now = new Date();
+  mongo.insert('users', {created: now}, {}, function(err, user_docs) {
+    var ticket_key = ALPHADEC.sample(32).join('');
+    mongo.insert('tickets', {user_id: user_docs[0]._id, key: ticket_key, created: now}, {}, function(err, ticket_docs) {
+      mongo.insert('locations', {ticket_id: ticket_docs[0]._id, ip: ip, user_agent: user_agent, created: now}, {}, function() { });
+    });
+    cookies.set('ticket', ticket_key);
+    callback(undefined, user_docs[0]._id);
   });
 }
 function _getUserForTicket(ip, user_agent, cookies, callback) {
   var ticket = cookies.get('ticket');
   // ip, user_agent aren't used unless the user has a different ip than last time
-  querySql("SELECT id, user_id FROM tickets WHERE tickets.name = $1", [ticket], function(ticket_id_results, client) {
-    var ticket_id_result = ticket_id_results.rows[0];
-    if (ticket_id_result) {
-      var ticket_id = ticket_id_result.id;
-      var user_id = ticket_id_result.user_id;
-      querySql("SELECT ip FROM locations WHERE ticket_id = $1 ORDER BY created DESC",
-          [ticket_id], function(location_ip_results) {
-        var location_ip_result = location_ip_results.rows[0];
-        if (location_ip_result && location_ip_result.ip != ip) {
-          querySql("INSERT INTO locations (ticket_id, ip, user_agent) VALUES ($1, $2, $3)", 
-            [ticket_id, ip, user_agent], function() { 
-              // don't need to do anything
-          }, client);
+  return mongo.findFirst('tickets', {key: ticket}, {}, function(err, ticket_doc) {
+    // var ticket_id_result = ticket_id_results.rows[0];
+    if (ticket_doc) {
+      var ticket_id = ticket_doc._id, user_id = ticket_doc.user_id;
+      mongo.findFirst('locations', {ticket_id: ticket_id}, {sort: [['created', -1]]}, function(err, location_doc, locations_coll) {
+        if (location_doc && location_doc.ip != ip) {
+          locations_coll.insert({ticket_id: ticket_id, ip: ip, user_agent: user_agent, created: new Date()});
         }
-      }, client);
-      callback(undefined, user_id);
+      });
+      return callback(undefined, user_id);
     }
     else {
       // reassign a ticket, since that one is not in the database
       console.log("Creating new user because the ticket is bad:", ticket);
-      _createUser(ip, user_agent, cookies, callback);
+      return _createUser(ip, user_agent, cookies, callback);
     }
   });
 }
@@ -119,17 +95,6 @@ function _getUserIdFromRequest(req, res, callback) {
   }
   return _createUser(req.ip, req.headers['user-agent'], req.cookies, callback);
 }
-// function _getCookieWithDefault(cookies, name, default_value, cookie_options) {
-//   var cookie_value = cookies.get(name)
-//   // console.log("cookies[" + name + "] = " + cookie_value)
-//   if (!cookie_value) {
-//     cookies.set(name, default_value, cookie_options)
-//     console.log("cookies[" + name + "] <- " + default_value)
-//     return default_value
-//   }
-//   return cookie_value
-// }
-
 
 
 
@@ -160,7 +125,7 @@ var pctc_files = [
   ["w-do","w-do0","do-w0","w-di45","di-w0","a"],
   ["d-wo","wi-d225","d-wo225","wo-d270","d-wi180","b"],
   ["d-ci","co-d270","ci-d180","d-co225","d-ci225","d"],
-  ["wi-c","wi-c0","wo-c0","c-wo0","c-wi315","a"],
+  ["wi-c","wi-c0","wo-c0","c-wo0","c-wi315","a"]
 ];
 
 var actual_files = ["c-wi.m4v", "c-wo.m4v", "ci-d.m4v", "ci-w.m4v", "co-d.m4v", "co-w.m4v", "d-ci.m4v", "d-co.m4v", "d-wi.m4v", "d-wo.m4v",
@@ -170,7 +135,7 @@ var actual_files = ["c-wi.m4v", "c-wo.m4v", "ci-d.m4v", "ci-w.m4v", "co-d.m4v", 
 var pctc_stimuli = [];
 pctc_files.forEach(function(parts, index) {
   var base_url = '/surveys/pctc/';
-  // for now, we only register stimuli that we have files for.
+  // for now, we only register stimuli that we have files for. hack because of bad data.
   if (actual_files.indexOf(parts[0] + '.m4v') > -1) {
     var stimulus = {
       id: index,
@@ -187,7 +152,7 @@ pctc_files.forEach(function(parts, index) {
 console.log("Loading " + pctc_stimuli.length + " stimuli"); 
 
 
-function pctc_transducer(state) {
+function pctc_advance_state(state) {
   console.log('Transducer BEGIN:', state);
   if (state.label == 'zero') {
     state.label = 'intro';
@@ -214,38 +179,16 @@ function pctc_transducer(state) {
   return state;
 }
 
-function pctc_renderState(req, res, state, full) {
-  if (full === undefined) { full = true; }
-  // full is true if we want to render a whole page, with layout and everything,
-  // and false if we just want to return a json response with the content html
+/* pctc_responses => [{ // should id be its own collection? or just in the responses collection, with an additional survey: 'pctc' field?
+  _id: ObjectId,
+  user_id: ObjectId,
+  time_stimulus_completed: Integer, // milliseconds
+  time_choices_shown: Integer, // milliseconds
+  time_choice_selected: Integer, // milliseconds
+  created: Date,
+}]
+*/  
   
-  var pctc_templates_root = 'surveys/pctc/templates';
-  
-  var layout_path = path.join(pctc_templates_root, 'layout.mu');
-  var label_path = path.join(pctc_templates_root, state.label + '.mu');
-  
-  var context = {stimuli: pctc_stimuli, user_id: state.user_id};
-  if (state.label == 'show_video') {
-    context['stimulus'] = pctc_stimuli[state.index];
-  }
-  if (state.label == 'show_choices') {
-    stimulus = pctc_stimuli[state.index];
-    context['id'] = stimulus.id;
-    context['choices'] = ['a', 'b', 'c', 'd'].map(function(prop) {
-      return {value: prop, url: stimulus[prop]};
-    });
-  }
-    
-  if (full) {
-    addHtmlHead(res);
-    amulet.render([layout_path, label_path], context, res);
-  }
-  else {
-    amulet.renderString([label_path], context, function(err, html) {
-      writeJson(res, {success: true, html: html}); // state: state, 
-    });
-  }
-}
 
 function pctc_router(req, res) {
   // this converts a state (in the cookies of a user) into some sort of response to res
@@ -270,7 +213,7 @@ function pctc_router(req, res) {
       //
       // if the format requested is .json, send back just the content, not a whole layout.
       // if (m[1]) { }
-      state = pctc_transducer(state);
+      state = pctc_advance_state(state);
       // the state probably changed in the transducer, so we save the new values
       req.cookies.set('label', state.label);
       req.cookies.set('index', state.index);
@@ -281,23 +224,70 @@ function pctc_router(req, res) {
           // payload = { responses: 
           //   [ { stimulus_id: 85, total_time: 58987, value: 'ERT' (, sureness: 100) }, ...
         if (payload.responses) {
-          payload.responses.forEach(function(response) {
+          var response_docs = payload.responses.map(function(raw_response) {
             // if (response.sureness === undefined) { response.sureness = null; }
-            if (response.total_time === undefined) { response.total_time = -1; }
-            if (response.value === undefined) { response.value = ''; }
-            if (response.details === undefined) { response.details = null; }
+            // if (response.total_time === undefined) { response.total_time = -1; }
+            // if (response.value === undefined) { response.value = ''; }
+            // if (response.details === undefined) { response.details = null; }
             // response.sureness,
-            querySql("INSERT INTO responses (user_id, stimulus_id, total_time, value, details) \
-              VALUES ($1, $2, $3, $4, $5);",
-              [user_id, response.stimulus_id, response.total_time, response.value, response.details]);
+              // stimulus_id: raw_response.stimulus_id.toString(),
+              // value: raw_response.value.toString(),
+              // total_time: response.total_time
+
+            var response = { user_id: user_id, created: new Date() }, key;
+            for (key in raw_response) {
+              if (key.match(/^time/)) {
+                response[key] = parseInt(raw_response[key]);
+              }
+              else {
+                response[key] = raw_response[key].toString();
+              }
+            }
+            delete response['toJsonString'];
+
+            return response;
           });
+          mongo.insert('pctc_responses', response_docs, {}, function() {});
         }
       });
       
       full = false;
     }
     
-    pctc_renderState(req, res, state, full);
+    // pctc_renderState(req, res, state, full);
+    // if (full === undefined) { full = true; }
+    // full is true if we want to render a whole page, with layout and everything,
+    // and false if we just want to return a json response with the content html
+  
+    var pctc_templates_root = 'surveys/pctc/templates';
+  
+    var label_path = pctc_templates_root + '/' + state.label + '.mu';
+  
+    var context = {stimuli: pctc_stimuli, user_id: state.user_id};
+    var stimulus = pctc_stimuli[state.index];
+
+    if (state.label === 'show_video') {
+      context['stimulus'] = stimulus;
+    }
+    if (state.label === 'show_choices') {
+      context['id'] = stimulus.id;
+    }
+    if (state.label === 'show_video' || state.label === 'show_choices') {
+      context['choices'] = ['a', 'b', 'c', 'd'].map(function(prop) {
+        return {value: prop, url: stimulus[prop]};
+      });
+    }
+    
+    if (full) {
+      addHtmlHead(res);
+      var layout_path = pctc_templates_root + '/layout.mu';
+      amulet.render([layout_path, label_path], context, res);
+    }
+    else {
+      amulet.renderString([label_path], context, function(err, html) {
+        writeJson(res, {success: true, html: html}); // state: state, 
+      });
+    }
   });
 }
 
@@ -309,14 +299,6 @@ function router(req, res) {
 
   console.log("Routing: " + req.url);
 
-  // if (m = req.url.match(/^\/api\/\d+\/(.+)$/)) {
-  //   // discard the version, for now // console.log('API: ' + m[1])
-  //   api(req, res, m[1])
-  // }
-  // else if (req.url.match(/^\/test$/)) {
-  //   res.end(util.inspect(req, false, null));
-  //   // console.log(req.headers['x-real-ip'])
-  // }
   var m = null;
   if (m = req.url.match(/^\/([^\/]+)(\/(.*))?$/)) {
     req.url = m[3];
@@ -338,8 +320,8 @@ function router(req, res) {
 
 // http.createServer(router).listen(CONFIG.server.socket);
 // console.log('Server running at:', CONFIG.server.socket);
-http.createServer(router).listen(CONFIG.server.port, CONFIG.server.host)
-console.log('Server running at http://' + CONFIG.server.host + ':' + CONFIG.server.port + '/')
+http.createServer(router).listen(CONFIG.server.port, CONFIG.server.host);
+console.log('Server running at http://' + CONFIG.server.host + ':' + CONFIG.server.port + '/');
 
 
 // process.on('uncaughtException', function (err) {

@@ -1,3 +1,26 @@
+db.users => [{
+  _id: ObjectId,
+  name: String,
+  created: Date,
+}, ...]
+
+db.tickets => [{
+  _id: ObjectId,
+  user_id: ObjectId,
+  key: String,
+  created: Date,
+  deleted: Date | null,
+}, ...]
+
+db.locations => [{
+  _id: ObjectId,
+  ticket_id: ObjectId,
+  ip: String,
+  user_agent: String,
+  created: Date,
+  deleted: Date | null,
+}, ...]
+
 select total_time, responses.value, name, stimuli.value from responses inner join stimuli on stimuli.id = stimulus_id;
 
 

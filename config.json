@@ -1,5 +1,10 @@
 {
-  "database": "pg://chbrown@localhost/drags",
+  "database": {
+    "type": "mongodb",
+    "host": "127.0.0.1",
+    "port": 17071,
+    "db": "drags"
+  },
   "server": {
     "host": "127.0.0.1",
     "port": 1301,
