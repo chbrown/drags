@@ -7,6 +7,7 @@ var sys = require('sys'),
     Cookies = require('cookies'),
     amulet = require('amulet'); 
 require('./lib/basic');
+require('./lib/date');
 
 // ARGV[0] is "node" and [1] is the name of this script and [2] is the name of the first command line argument
 var config_file = (process.ARGV[2] && process.ARGV[2].substr(-5) == '.json') ? process.ARGV[2] : 'config.json';
@@ -182,6 +183,7 @@ function pctc_advance_state(state) {
 /* pctc_responses => [{ // should id be its own collection? or just in the responses collection, with an additional survey: 'pctc' field?
   _id: ObjectId,
   user_id: ObjectId,
+  value: String,
   time_stimulus_completed: Integer, // milliseconds
   time_choices_shown: Integer, // milliseconds
   time_choice_selected: Integer, // milliseconds
@@ -258,35 +260,62 @@ function pctc_router(req, res) {
     // if (full === undefined) { full = true; }
     // full is true if we want to render a whole page, with layout and everything,
     // and false if we just want to return a json response with the content html
-  
-    var pctc_templates_root = 'surveys/pctc/templates';
-  
-    var label_path = pctc_templates_root + '/' + state.label + '.mu';
-  
-    var context = {stimuli: pctc_stimuli, user_id: state.user_id};
-    var stimulus = pctc_stimuli[state.index];
-
-    if (state.label === 'show_video') {
-      context['stimulus'] = stimulus;
-    }
-    if (state.label === 'show_choices') {
-      context['id'] = stimulus.id;
-    }
-    if (state.label === 'show_video' || state.label === 'show_choices') {
-      context['choices'] = ['a', 'b', 'c', 'd'].map(function(prop) {
-        return {value: prop, url: stimulus[prop]};
-      });
-    }
     
-    if (full) {
-      addHtmlHead(res);
-      var layout_path = pctc_templates_root + '/layout.mu';
-      amulet.render([layout_path, label_path], context, res);
+    var pctc_templates_root = 'surveys/pctc/templates', context;
+    if (req.url === 'results?pass=LUam6R4v368UAR') {
+      mongo.findAll('pctc_responses', {}, {}, function(err, documents) {
+        // console.log(documents.length, documents);
+        var responses = documents.map(function(d) {
+          var response = {
+            time_since_end_of_video: (d.time_choice_selected - d.time_stimulus_completed),
+            time_since_choices_shown: (d.time_choice_selected - d.time_choices_shown),
+            value: d.value,
+            user_id: d.user_id,
+            stimulus_id: d.stimulus_id
+          };
+          // console.log('typeof: ', typeof d.created);
+          if (d.created) {
+            response.created = d.created.format("mm/dd/yyyy h:MM:ss TT");
+          }
+          return response;
+        });
+        context = {responses: responses};
+        
+        var layout_path = pctc_templates_root + '/layout.mu';
+        var results_path = pctc_templates_root + '/results.mu';
+        addHtmlHead(res);
+        amulet.render([layout_path, results_path], context, res);
+      });
     }
     else {
-      amulet.renderString([label_path], context, function(err, html) {
-        writeJson(res, {success: true, html: html}); // state: state, 
-      });
+  
+      var label_path = pctc_templates_root + '/' + state.label + '.mu';
+  
+      context = {stimuli: pctc_stimuli, user_id: state.user_id};
+      var stimulus = pctc_stimuli[state.index];
+
+      if (state.label === 'show_video') {
+        context['stimulus'] = stimulus;
+      }
+      if (state.label === 'show_choices') {
+        context['id'] = stimulus.id;
+      }
+      if (state.label === 'show_video' || state.label === 'show_choices') {
+        context['choices'] = ['a', 'b', 'c', 'd'].map(function(prop) {
+          return {value: prop, url: stimulus[prop]};
+        });
+      }
+    
+      if (full) {
+        addHtmlHead(res);
+        var layout_path = pctc_templates_root + '/layout.mu';
+        amulet.render([layout_path, label_path], context, res);
+      }
+      else {
+        amulet.renderString([label_path], context, function(err, html) {
+          writeJson(res, {success: true, html: html}); // state: state, 
+        });
+      }
     }
   });
 }
