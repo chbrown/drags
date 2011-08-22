@@ -139,6 +139,6 @@ $.cookieSetup({
   path: '/'
 });
 
-if (console === undefined) {
-  console.log = function() { }; // just swallow it
+if (window.console === undefined) {
+  window.console = {"log": function() { }; };// just swallow any logs, if there aren't any dev tools available.
 }
