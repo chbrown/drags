@@ -224,8 +224,6 @@ function pctc_router(req, res) {
     }
     
     pctc_stimuli = pctc_stimuli_sets[state.version];
-    console.log(pctc_stimuli);
-    console.log(state.version);
     
     if (m = req.url.match(/next\.json$/)) {
 
