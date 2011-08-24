@@ -140,5 +140,5 @@ $.cookieSetup({
 });
 
 if (window.console === undefined) {
-  window.console = {"log": function() { }; };// just swallow any logs, if there aren't any dev tools available.
+  window.console = {"log": function() { } };// just swallow any logs, if there aren't any dev tools available.
 }

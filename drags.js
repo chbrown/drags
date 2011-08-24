@@ -104,81 +104,84 @@ function _getUserIdFromRequest(req, res, callback) {
 //   print '["' + '","'.join(parts) + '"],'
 
   // stimuli A B C D correct
-var pctc_files = [
-  ["wi-f","f-wi0","f-wo135","wi-f45","wo-f90","c"],
-  ["c-fi","c-fi180","c-fo45","fi-c0","fo-c225","a"],
-  ["ci-d","d-co0","d-ci315","ci-d45","co-d90","c"],
-  ["do-w","di-w45","w-di315","do-w180","w-do0","c"],
-  ["co-w","w-co0","ci-w315","w-ci45","co-w180","d"],
-  ["wi-d","d-wi315","wi-d45","d-wo90","wo-d0","b"],
-  ["w-ci","co-w0","w-co90","ci-w135","w-ci225","d"],
-  ["c-di","c-do90","di-c315","c-di0","do-c135","c"],
-  ["co-d","co-d135","d-co225","d-ci270","ci-d0","a"],
-  ["wo-d","d-wi0","d-wo315","wo-d90","wi-d135","c"],
-  ["c-do","c-di270","do-c180","di-c135","c-do315","d"],
-  ["w-di","w-do0","w-di90","di-w270","do-w225","b"],
-  ["ci-w","w-co270","ci-w135","co-w315","w-ci180","b"],
-  ["wo-c","wi-c90","wo-c270","c-wo135","c-wi0","b"],
-  ["do-c","di-c0","do-c45","c-do315","c-di0","b"],
-  ["wo-c","wo-c180","c-wi270","c-wo225","wi-c225","a"],
-  ["d-wi","wi-d225","d-wo225","d-wi225","wo-d180","c"],
-  ["di-w","w-do0","do-w45","w-di0","di-w315","d"],
-  ["w-do","w-do0","do-w0","w-di45","di-w0","a"],
-  ["d-wo","wi-d225","d-wo225","wo-d270","d-wi180","b"],
-  ["d-ci","co-d270","ci-d180","d-co225","d-ci225","d"],
-  ["wi-c","wi-c0","wo-c0","c-wo0","c-wi315","a"]
-];
+var pctc_files = {
+  a: [
+    ["a01", "a/fo-w.m4v", "w-fo(ego).jpg" , "fo-w0.jpg"     , "fi-w225.jpg"   , "w-fi135.jpg"   , "b" ],
+    ["a02", "a/f-co.m4v", "ci-f135.jpg"   , "co-f180.jpg"   , "f-co45.jpg"    , "f-ci270.jpg"   , "c" ],
+    ["a03", "a/wi-c.m4v", "c-wi180.jpg"   , "wo-c135.jpg"   , "wi-c45.jpg"    , "c-wo270.jpg"   , "c" ],
+    ["a04", "a/do-w.m4v", "di-w315.jpg"   , "w-do180.jpg"   , "w-di270.jpg"   , "do-w45.jpg"    , "d" ],
+    ["a05", "a/w-di.m4v", "w-do225.jpg"   , "di-w(ego).jpg" , "do-w135.jpg"   , "w-di0.jpg"     , "d" ],
+    ["a06", "a/d-wo.m4v", "wi-d225.jpg"   , "wo-d(ego).jpg" , "d-wo0.jpg"     , "d-wi135.jpg"   , "c" ],
+    ["a07", "a/wo-d.m4v", "wo-d135.jpg"   , "wi-d270.jpg"   , "d-wi225.jpg"   , "do-w(ego).jpg" , "a" ],
+    ["a08", "a/d-wi.m4v", "wo-d180.jpg"   , "d-wi270.jpg"   , "wi-d315.jpg"   , "d-wo135.jpg"   , "b" ],
+    ["a09", "a/do-c.m4v", "di-c135.jpg"   , "c-do315.jpg"   , "c-di270.jpg"   , "do-c180.jpg"   , "d" ],
+    ["a10", "a/wi-c.m4v", "c-wi(ego).jpg" , "c-wo135.jpg"   , "wo-c90.jpg"    , "wi-c225.jpg"   , "d" ],
+    ["a11", "a/co-d.m4v", "ci-d45.jpg"    , "co-d90.jpg"    , "d-co(ego).jpg" , "d-ci270.jpg"   , "b" ],
+    ["a12", "a/w-do.m4v", "w-di270.jpg"   , "di-w315.jpg"   , "w-do270.jpg"   , "do-w(ego).jpg" , "c" ],
+    ["a13", "a/ci-w.m4v", "ci-w135.jpg"   , "w-co90.jpg"    , "co-w315.jpg"   , "w-ci0.jpg"     , "a" ],
+    ["a14", "a/w-do.m4v", "di-w135.jpg"   , "w-do315.jpg"   , "do-w0.jpg"     , "w-di90.jpg"    , "b" ],
+    ["a15", "a/c-di.m4v", "c-do225.jpg"   , "di-c90.jpg"    , "c-di0.jpg"     , "do-c225.jpg"   , "c" ],
+    ["a16", "a/w-co.m4v", "w-ci225.jpg"   , "co-w0.jpg"     , "ci-w225.jpg"   , "w-co90.jpg"    , "d" ],
+    ["a17", "a/c-di.m4v", "c-do180.jpg"   , "c-di315.jpg"   , "di-c(ego).jpg" , "do-c45.jpg"    , "b" ],
+    ["a18", "a/w-ci.m4v", "w-ci45.jpg"    , "ci-w(ego).jpg" , "co-w180.jpg"   , "w-co315.jpg"   , "a" ],
+    ["a19", "a/c-wo.m4v", "c-wi180.jpg"   , "wi-c225.jpg"   , "c-wo225.jpg"   , "wo-c90.jpg"    , "c" ],
+    ["a20", "a/di-w.m4v", "w-do225.jpg"   , "di-w225.jpg"   , "w-di90.jpg"    , "do-w0.jpg"     , "b" ],
+    ["a21", "a/wi-d.m4v", "wi-d180.jpg"   , "d-wo180.jpg"   , "d-wi(ego).jpg" , "wo-d315.jpg"   , "a" ],
+    ["a22", "a/di-c.m4v", "c-di(ego).jpg" , "do-c45.jpg"    , "c-do180.jpg"   , "di-c180.jpg"   , "d" ]
+  ],
+  b: [
+    ["b01" , "b/wi-f.m4v" , "f-wi0.jpg"   , "f-wo135.jpg" , "wi-f45.jpg"  , "wo-f90.jpg"  , "c"],
+    ["b02" , "b/c-fi.m4v" , "c-fi180.jpg" , "c-fo45.jpg"  , "fi-c0.jpg"   , "fo-c225.jpg" , "a"],
+    ["b03" , "b/ci-d.m4v" , "d-co0.jpg"   , "d-ci315.jpg" , "ci-d45.jpg"  , "co-d90.jpg"  , "c"],
+    ["b04" , "b/do-w.m4v" , "di-w45.jpg"  , "w-di315.jpg" , "do-w180.jpg" , "w-do0.jpg"   , "c"],
+    ["b05" , "b/co-w.m4v" , "w-co0.jpg"   , "ci-w315.jpg" , "w-ci45.jpg"  , "co-w180.jpg" , "d"],
+    ["b06" , "b/wi-d.m4v" , "d-wi315.jpg" , "wi-d45.jpg"  , "d-wo90.jpg"  , "wo-d0.jpg"   , "b"],
+    ["b07" , "b/w-ci.m4v" , "co-w0.jpg"   , "w-co90.jpg"  , "ci-w135.jpg" , "w-ci225.jpg" , "d"],
+    ["b08" , "b/c-di.m4v" , "c-do90.jpg"  , "di-c315.jpg" , "c-di0.jpg"   , "do-c135.jpg" , "c"],
+    ["b09" , "b/co-d.m4v" , "co-d135.jpg" , "d-co225.jpg" , "d-ci270.jpg" , "ci-d0.jpg"   , "a"],
+    ["b10" , "b/wo-d.m4v" , "d-wi0.jpg"   , "d-wo315.jpg" , "wo-d90.jpg"  , "wi-d135.jpg" , "c"],
+    ["b11" , "b/c-do.m4v" , "c-di270.jpg" , "do-c180.jpg" , "di-c135.jpg" , "c-do315.jpg" , "d"],
+    ["b12" , "b/w-di.m4v" , "w-do0.jpg"   , "w-di90.jpg"  , "di-w270.jpg" , "do-w225.jpg" , "b"],
+    ["b13" , "b/ci-w.m4v" , "w-co270.jpg" , "ci-w135.jpg" , "co-w315.jpg" , "w-ci180.jpg" , "b"],
+    ["b14" , "b/wo-c.m4v" , "wi-c90.jpg"  , "wo-c270.jpg" , "c-wo135.jpg" , "c-wi0.jpg"   , "b"],
+    ["b15" , "b/do-c.m4v" , "di-c0.jpg"   , "do-c45.jpg"  , "c-do315.jpg" , "c-di0.jpg"   , "b"],
+    ["b16" , "b/wo-c.m4v" , "wo-c180.jpg" , "c-wi270.jpg" , "c-wo225.jpg" , "wi-c225.jpg" , "a"],
+    ["b17" , "b/d-wi.m4v" , "wi-d225.jpg" , "d-wo225.jpg" , "d-wi225.jpg" , "wo-d180.jpg" , "c"],
+    ["b18" , "b/di-w.m4v" , "w-do0.jpg"   , "do-w45.jpg"  , "w-di0.jpg"   , "di-w315.jpg" , "d"],
+    ["b19" , "b/w-do.m4v" , "w-do0.jpg"   , "do-w0.jpg"   , "w-di45.jpg"  , "di-w0.jpg"   , "a"],
+    ["b20" , "b/d-wo.m4v" , "wi-d225.jpg" , "d-wo225.jpg" , "wo-d270.jpg" , "d-wi180.jpg" , "b"],
+    ["b21" , "b/d-ci.m4v" , "co-d270.jpg" , "ci-d180.jpg" , "d-co225.jpg" , "d-ci225.jpg" , "d"],
+    ["b22" , "b/wi-c.m4v" , "wi-c0.jpg"   , "wo-c0.jpg"   , "c-wo0.jpg"   , "c-wi315.jpg" , "a"]
+  ]
+};
 
-var actual_files = ["c-wi.m4v", "c-wo.m4v", "ci-d.m4v", "ci-w.m4v", "co-d.m4v", "co-w.m4v", "d-ci.m4v", "d-co.m4v", "d-wi.m4v", "d-wo.m4v",
-"f-co.m4v", "w-ci.m4v", "w-co.m4v", "w-di.m4v", "w-do.m4v", "w-fi.m4v", "w-fo.m4v", "wi-c.m4v", "wi-d.m4v", "wo-c.m4v",
-"wo-d.m4v"];
-
-var pctc_stimuli = [];
-pctc_files.forEach(function(parts, index) {
-  var base_url = '/surveys/pctc/';
-  // for now, we only register stimuli that we have files for. hack because of bad data.
-  if (actual_files.indexOf(parts[0] + '.m4v') > -1) {
-    var stimulus = {
-      id: index,
-      stimulus: base_url + parts[0] + '.m4v',
-      a: base_url + parts[1] + '.jpg',
-      b: base_url + parts[2] + '.jpg',
-      c: base_url + parts[3] + '.jpg',
-      d: base_url + parts[4] + '.jpg',
-      correct: parts[5]
-    };
-    pctc_stimuli.push(stimulus);
-  }
-});
-console.log("Loading " + pctc_stimuli.length + " stimuli"); 
-
-
-function pctc_advance_state(state) {
-  console.log('Transducer BEGIN:', state);
-  if (state.label == 'zero') {
-    state.label = 'intro';
-  }
-  else if (state.label == 'intro') {
-    state.label = 'instructions';
-  }
-  else if (state.label == 'instructions') {
-    state.label = 'show_video';
-  }
-  else if (state.label == 'show_video') { // this might be merged out.
-    state.label = 'show_choices';
-  }
-  else if (state.label == 'show_choices') {
-    state.index++;
-    if (state.index >= pctc_stimuli.length) {
-      state.label = 'conclusion';
-    }
-    else {
-      state.label = 'show_video';
-    }
-  }
-  console.log('Transducer END:', state);
-  return state;
+function array_to_obj(arr, keys) {
+  var obj = {};
+  keys.forEach(function(key, i) {
+    obj[key] = arr[i];
+  });
+  return obj;
 }
+
+var base_url = '/surveys/pctc/',
+    pctc_stimuli_sets = {a: [], b: []};
+['a', 'b'].forEach(function(a_or_b) {
+  // console.log(Array.isArray(pctc_files[a_or_b]));
+  pctc_files[a_or_b].forEach(function(arr, index) {
+    var stimulus = array_to_obj(arr, ['id', 'stimulus', 'a', 'b', 'c', 'd', 'correct']);
+    stimulus.stimulus = base_url + stimulus.stimulus;
+    ['a', 'b', 'c', 'd'].forEach(function(url_key) {
+      stimulus[url_key] = base_url + 'images/' + stimulus[url_key];
+    });
+    pctc_stimuli_sets[a_or_b].push(stimulus);
+  });
+});
+console.log("Loading " + (pctc_stimuli_sets.a.length + pctc_stimuli_sets.b.length) + " stimuli"); 
+
+
+// function pctc_advance_state(state) {
+      // return state;
+// }
 
 /* pctc_responses => [{ // should id be its own collection? or just in the responses collection, with an additional survey: 'pctc' field?
   _id: ObjectId,
@@ -196,9 +199,16 @@ function pctc_router(req, res) {
   // this converts a state (in the cookies of a user) into some sort of response to res
   return _getUserIdFromRequest(req, res, function(err, user_id) {
     if (err) { console.log(err); }
-    var state = { label: req.cookies.get('label'), index: req.cookies.get('index'), user_id: user_id };
-    console.log(state);
-    
+    var full = true, // @full: by default, we want fully laid-out responses
+      m, // @m: for regex matches, later on
+      state = {
+        label: req.cookies.get('label'),
+        index: req.cookies.get('index'),
+        version: req.cookies.get('version'),
+        user_id: user_id 
+      },
+      pctc_stimuli;
+      
     // initializations:
     if (state.label === undefined) {
       state.label = 'intro';
@@ -208,14 +218,43 @@ function pctc_router(req, res) {
       state.index = '0'; // for some reason, needs to be string. I understand, I guess. Fix in Cookies?
       req.cookies.set('index', state.index);
     }
+    if (state.version === undefined) {
+      state.version = ['a', 'b'][Math.round(Math.random())];
+      req.cookies.set('version', state.version);
+    }
     
-    var full = true;
-    var m = null;
-    if (m = req.url.match(/next.json$/)) {
-      //
-      // if the format requested is .json, send back just the content, not a whole layout.
-      // if (m[1]) { }
-      state = pctc_advance_state(state);
+    pctc_stimuli = pctc_stimuli_sets[state.version];
+    console.log(pctc_stimuli);
+    console.log(state.version);
+    
+    if (m = req.url.match(/next\.json$/)) {
+
+      // ADVANCE!
+      // state = pctc_advance_state(state);
+      console.log('Transducer BEGIN:', state);
+      if (state.label == 'zero') {
+        state.label = 'intro';
+      }
+      else if (state.label == 'intro') {
+        state.label = 'instructions';
+      }
+      else if (state.label == 'instructions') {
+        state.label = 'show_video';
+      }
+      else if (state.label == 'show_video') { // this might be merged out.
+        state.label = 'show_choices';
+      }
+      else if (state.label == 'show_choices') {
+        state.index++;
+        if (state.index >= pctc_stimuli.length) {
+          state.label = 'conclusion';
+        }
+        else {
+          state.label = 'show_video';
+        }
+      }
+      console.log('Transducer END:', state);
+
       // the state probably changed in the transducer, so we save the new values
       req.cookies.set('label', state.label);
       req.cookies.set('index', state.index);
@@ -223,27 +262,11 @@ function pctc_router(req, res) {
       // fork off to submit payload (always responses?)
       waitUntilComplete(req, function() {
         var payload = JSON.parseWithDefault(req.data, {});
-          // payload = { responses: 
-          //   [ { stimulus_id: 85, total_time: 58987, value: 'ERT' (, sureness: 100) }, ...
         if (payload.responses) {
           var response_docs = payload.responses.map(function(raw_response) {
-            // if (response.sureness === undefined) { response.sureness = null; }
-            // if (response.total_time === undefined) { response.total_time = -1; }
-            // if (response.value === undefined) { response.value = ''; }
-            // if (response.details === undefined) { response.details = null; }
-            // response.sureness,
-              // stimulus_id: raw_response.stimulus_id.toString(),
-              // value: raw_response.value.toString(),
-              // total_time: response.total_time
-
             var response = { user_id: user_id, created: new Date() }, key;
             for (key in raw_response) {
-              if (key.match(/^time/)) {
-                response[key] = parseInt(raw_response[key]);
-              }
-              else {
-                response[key] = raw_response[key].toString();
-              }
+              response[key] = key.match(/^time/) ? parseInt(raw_response[key]) : raw_response[key].toString();
             }
             delete response['toJsonString'];
 
@@ -312,6 +335,7 @@ function pctc_router(req, res) {
         amulet.render([layout_path, label_path], context, res);
       }
       else {
+        // if the format requested is .json, send back just the content, not a whole layout.
         amulet.renderString([label_path], context, function(err, html) {
           writeJson(res, {success: true, html: html}); // state: state, 
         });
@@ -325,12 +349,13 @@ function router(req, res) {
   req.on('data', function(chunk) { req.data += chunk; });
   req.ip = req.headers['x-real-ip'] || req.client.remoteAddress;
   req.cookies = new Cookies(req, res);
+  res.setHeader("content-type", "text/html;charset=utf-8");
 
   console.log("Routing: " + req.url);
 
   var m = null;
   if (m = req.url.match(/^\/([^\/]+)(\/(.*))?$/)) {
-    req.url = m[3];
+    req.url = m[3] || '';
     if (m[1] === 'dichotic') {
       res.end('The dichotic survey needs some updating. Tell io@henrian.com');
       // dichotic_router(req, res);
