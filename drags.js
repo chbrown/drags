@@ -73,9 +73,16 @@ function _getUserIdFromRequest(req, res, callback) {
 
 var surveys = { }, Survey;
 fs.readdirSync(path.join(__dirname, 'surveys')).forEach(function(survey_path) {
-  Survey = require(path.join(__dirname, 'surveys', survey_path)).Survey;
-  surveys[survey_path] = new Survey(_getUserIdFromRequest, mongo);
-  console.log("Loaded survey: " + survey_path);
+  if (survey_path[0] !== '.') {
+    try {
+      Survey = require(path.join(__dirname, 'surveys', survey_path)).Survey;
+      surveys[survey_path] = new Survey(_getUserIdFromRequest, mongo);
+      console.log("Loaded survey: " + survey_path);
+    }
+    catch (e) {
+      console.log("Couldn't load survey: " + survey_path);
+    }
+  }
 });
 
 function router(req, res) {
