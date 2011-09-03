@@ -218,3 +218,19 @@ table.choices input {
   font-size: 120%;
   padding: 2px 20px;
 }
+
+#form label {
+  display: block;
+  margin: 20px 0 5px 0;
+  font-weight: bold;
+  font-size: 90%;
+}
+#form label.radio {
+  display: inline;
+  font-weight: normal;
+  font-size: 100%;
+  padding: 0 8px 0 2px;
+}
+#form .other {
+  padding: 8px 0 2px 12px;
+}

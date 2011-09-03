@@ -13,6 +13,7 @@
   "dependencies" : {
     "amulet": "http://github.com/chbrown/amulet/tarball/master",
     "cookies": "http://github.com/chbrown/cookies/tarball/master",
+    "wrappers": "http://henrian.com/f/git/node_wrappers.tar.gz",
     "mongodb": "0.x.x"
   },
   "scripts" : { 
