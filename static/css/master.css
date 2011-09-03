@@ -24,6 +24,7 @@ ul, ol { margin: 2px 0; padding-left: 30px; }
 .nopad { padding: 0 !important; }
 .nomargin { margin: 0; }
 .nowrap { white-space: nowrap; }
+.wrap { white-space: normal; }
 
 body {
   font-family: Arial, Verdana;
