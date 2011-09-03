@@ -3,12 +3,9 @@ var sys = require('sys'),
     path = require('path'),
     http = require('http'),
     mongodb = require('mongodb'),
-    mongo_helpers = require('./lib/mongo_helpers'),
+    amulet = require('amulet'),
     Cookies = require('cookies'),
-    amulet = require('amulet'); 
-    http_helpers = require('./lib/http_helpers'); 
-require('./lib/basic');
-require('./lib/date');
+    wrappers = require('wrappers');
 
 // ARGV[0] is "node" and [1] is the name of this script and [2] is the name of the first command line argument
 var config_file = (process.ARGV[2] && process.ARGV[2].substr(-5) == '.json') ? process.ARGV[2] : 'config.json';
@@ -24,7 +21,7 @@ Cookies.prototype.defaults = function() {
 
 var mongo_server = new mongodb.Server(CONFIG.database.host, CONFIG.database.port, {});
 var mongo_db = new mongodb.Db(CONFIG.database.db, mongo_server);
-var mongo = new mongo_helpers.MongoHelpers();
+var mongo = new wrappers.mongo.MongoHelpers();
 mongo_db.open(function(err, client) {
   if (err) { throw err; }
   mongo.setClient(client);
@@ -80,7 +77,8 @@ fs.readdirSync(path.join(__dirname, 'surveys')).forEach(function(survey_path) {
       console.log("Loaded survey: " + survey_path);
     }
     catch (e) {
-      console.log("Couldn't load survey: " + survey_path);
+      console.log("Couldn't load survey: " + survey_path + ", Error:");
+      console.log(e);
     }
   }
 });
@@ -108,7 +106,7 @@ function router(req, res) {
     }
   }
   else {
-    http_helpers.redirectTo(res, '/pctc/');
+    wrappers.http.redirectTo(res, '/pctc/');
   }
 }
 
