@@ -106,7 +106,7 @@ function router(req, res) {
     }
   }
   else {
-    wrappers.http.redirectTo(res, '/pctc/');
+    wrappers.http.redirectTo(res, '/ptct/');
   }
 }
 
