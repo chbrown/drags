@@ -13,8 +13,9 @@
   "dependencies" : {
     "amulet": "git://github.com/chbrown/amulet.git",
     "cookies": "git://github.com/chbrown/cookies.git",
-    "wrappers": "http://henrian.com/f/git/node_wrappers.tar.gz",
-    "mongodb": "0.x.x"
+    "wrappers": "git://github.com/chbrown/wrappers.git",
+    "mongodb": "0.x.x",
+    "csv": "0.x.x"
   },
   "scripts" : { 
     "test" : "node tests.js"

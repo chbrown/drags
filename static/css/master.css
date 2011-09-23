@@ -230,6 +230,7 @@ table.choices input {
   display: inline;
   font-weight: normal;
   font-size: 100%;
+  vertical-align: bottom;
   padding: 0 8px 0 2px;
 }
 #form .other {

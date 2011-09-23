@@ -139,11 +139,6 @@ $.cookieSetup({
   path: '/'
 });
 
-if (window.console === undefined) {
-  window.console = {"log": function() { } };// just swallow any logs, if there aren't any dev tools available.
-}
-
-
 //fgnass.github.com/spin.js
 (function(window, document, undefined) {
 
