@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+node drags.js
+#>> log/node_out.log 2>> log/node_error.log < /dev/null &
