@@ -1,4 +1,4 @@
-var sys = require('sys'),
+var util = require('util'),
     fs = require('fs'),
     path = require('path'),
     http = require('http'),
@@ -8,7 +8,7 @@ var sys = require('sys'),
     wrappers = require('wrappers');
 
 // ARGV[0] is "node" and [1] is the name of this script and [2] is the name of the first command line argument
-var config_file = (process.ARGV[2] && process.ARGV[2].substr(-5) == '.json') ? process.ARGV[2] : 'config.json';
+var config_file = (process.argv[2] && process.argv[2].substr(-5) == '.json') ? process.argv[2] : 'config.json';
 var CONFIG = JSON.parse(fs.readFileSync(config_file));
 console.inspect = function (x) { return console.log(util.inspect(x, false, null)); };
 var ALPHADEC = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
@@ -60,7 +60,7 @@ function _getUserFromRequest(req, res, callback) {
     }
     else {
       // reassign a ticket, since that one is not in the database
-      console.log("Creating new user because the ticket is bad:", ticket_key);
+      // console.log("Creating new user because the ticket is bad:", ticket_key);
       _createUser(ip, user_agent, callback);
     }
   });
@@ -76,7 +76,7 @@ fs.readdirSync(path.join(__dirname, 'surveys')).forEach(function(survey_path) {
     }
     catch (e) {
       console.log("Couldn't load survey: " + survey_path + ", Error:");
-      console.log(e);
+      console.log(util.inspect(e, true, null));
     }
   }
 });
