@@ -236,3 +236,11 @@ table.choices input {
 #form .other {
   padding: 8px 0 2px 12px;
 }
+
+.download-csv {
+  margin: 20px 0;
+}
+
+.download-csv img {
+  vertical-align: -20%;
+}

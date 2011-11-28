@@ -87,8 +87,7 @@ function router(req, res) {
   req.ip = req.headers['x-real-ip'] || req.client.remoteAddress;
   req.cookies = new Cookies(req, res);
   res.setHeader("content-type", "text/html;charset=utf-8");
-
-  console.log("Routing: " + req.url);
+  // console.log("Routing: " + req.url);
 
   var m = null, survey_name, survey;
   if (m = req.url.match(/^\/([^\/]+)(\/(.*))?$/)) {
@@ -108,8 +107,6 @@ function router(req, res) {
   }
 }
 
-// http.createServer(router).listen(CONFIG.server.socket);
-// console.log('Server running at:', CONFIG.server.socket);
 http.createServer(router).listen(CONFIG.server.port, CONFIG.server.host);
 console.log('DRAGS server running at http://' + CONFIG.server.host + ':' + CONFIG.server.port + '/');
 
