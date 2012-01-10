@@ -1,6 +1,6 @@
 {
   "name": "drags",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Digital Research-Assistant Graduate Student",
   "keywords" : ["drags", "surveys"],
   "homepage": "https://github.com/chbrown/drags",
@@ -15,7 +15,8 @@
     "cookies": "git://github.com/chbrown/cookies.git",
     "wrappers": "git://github.com/chbrown/wrappers.git",
     "mongodb": "0.x.x",
-    "csv": "0.x.x"
+    "csv": "0.x.x",
+    "optimist": "0.x.x"
   },
   "scripts" : { 
     "test" : "node tests.js"

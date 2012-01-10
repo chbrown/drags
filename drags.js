@@ -5,12 +5,10 @@ var util = require('util'),
     mongodb = require('mongodb'),
     amulet = require('amulet'),
     Cookies = require('cookies'),
+    argv = require('optimist').argv,
     wrappers = require('wrappers');
 
-// ARGV[0] is "node" and [1] is the name of this script and [2] is the name of the first command line argument
-var config_file = (process.argv[2] && process.argv[2].substr(-5) == '.json') ? process.argv[2] : 'config.json';
-var CONFIG = JSON.parse(fs.readFileSync(config_file));
-console.inspect = function (x) { return console.log(util.inspect(x, false, null)); };
+var CONFIG = JSON.parse(fs.readFileSync(argv.config || 'config.json'));
 var ALPHADEC = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
 
 amulet.root(path.join(__dirname), false); // false means: don't autoparse everything in that directory
@@ -87,7 +85,6 @@ function router(req, res) {
   req.ip = req.headers['x-real-ip'] || req.client.remoteAddress;
   req.cookies = new Cookies(req, res);
   res.setHeader("content-type", "text/html;charset=utf-8");
-  // console.log("Routing: " + req.url);
 
   var m = null, survey_name, survey;
   if (m = req.url.match(/^\/([^\/]+)(\/(.*))?$/)) {
