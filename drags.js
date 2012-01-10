@@ -8,7 +8,7 @@ var util = require('util'),
     argv = require('optimist').argv,
     wrappers = require('wrappers');
 
-var CONFIG = JSON.parse(fs.readFileSync(argv.config || 'config.json'));
+var CONFIG = JSON.parse(fs.readFileSync(argv.config || path.join(__dirname, 'config.json')));
 var ALPHADEC = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
 
 amulet.root(path.join(__dirname), false); // false means: don't autoparse everything in that directory
