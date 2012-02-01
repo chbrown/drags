@@ -75,7 +75,11 @@ function timestamp() { return (new Date()).getTime(); }
     this.processing_queue = false;
     this.$buffer = $buffer;
     this.timeouts = {zero: 20, slow: 80, hard: 200, wait: 200, loop: 250};
-    this.debug = debug === undefined ? false : debug;
+    this.debug = false;
+    if (debug !== undefined)
+      this.debug = debug;
+    else if (typeof Cookie !== 'undefined' && Cookie.get('debug') === 'true')
+      this.debug = true;
     // this.processQueue(); // don't automatically start
   }
   Preloader.prototype.pauseQueue = function() {
