@@ -107,6 +107,7 @@ function timestamp() { return (new Date()).getTime(); }
     this.callbacks[url].push(callback);
   };
   Preloader.prototype.processQueue = function(state) {
+    // this should respect this.paused == false (it should not override it)
     var preloader = this;
     if (preloader.paused) {
       preloader.processing_queue = false;
