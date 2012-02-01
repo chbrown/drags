@@ -137,6 +137,10 @@ function timestamp() { return (new Date()).getTime(); }
         });
       }
       else {
+        if (preloader.debug) {
+          console.log('Preloader.processQueue called vacuously (preloading is done).',
+            'processing_queue:', preloader.processing_queue, 'paused:', preloader.paused);
+        }
         preloader.processing_queue = false;
       }
     }
