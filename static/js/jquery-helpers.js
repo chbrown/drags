@@ -1,5 +1,7 @@
-if (window.console === undefined) {
-  window.console = {log: function() { } };// just swallow any logs, if there aren't any dev tools available.
+if (typeof console === "undefined" || typeof console.log === "undefined") {
+  // just swallow any logs, if there aren't any dev tools available.
+  console = {};
+  console.log = function() { };
 }
 
 // Cookie plugin Copyright (c) 2006 Klaus Hartl (stilbuero.de)
@@ -127,6 +129,7 @@ function timestamp() { return (new Date()).getTime(); }
         }
       }
       if (next_url) {
+        if (preloader.debug) console.log('Preloader queue loading url:', next_url);
         return preloader.getMedia({url: next_url}, function(err, media) {
           // just ignore the media for now, since it's in the cache
           if (err) { console.log(err); }
