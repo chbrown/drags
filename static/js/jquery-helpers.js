@@ -80,6 +80,7 @@ function timestamp() { return (new Date()).getTime(); }
   }
   Preloader.prototype.pauseQueue = function() {
     this.paused = true;
+    this.processing_queue = false;
   };
   Preloader.prototype.abortPreload = function(url) {
     this.pauseQueue();
