@@ -83,6 +83,7 @@ function timestamp() { return (new Date()).getTime(); }
     this.processing_queue = false;
   };
   Preloader.prototype.abortPreload = function(url) {
+    if (this.debug) console.log('Preloader.abortPreload. url:', url, 'processing_queue', this.processing_queue);
     this.pauseQueue();
     if (url === undefined) {
       url = this.currently_loading_url;
