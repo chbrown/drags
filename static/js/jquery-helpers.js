@@ -7,7 +7,7 @@ if (window.console === undefined) {
 // Some modifications by Christopher Brown <io@henrian.com>
 var cookie_defaults = {};
 function Cookie() {}
-Cookie.prototype.set = function(name, value, options) {
+Cookie.set = function(name, value, options) {
   // name and value given, set cookie
   options = options || _cookie_default_options;
   if (value === null) {
@@ -30,7 +30,7 @@ Cookie.prototype.set = function(name, value, options) {
   var secure = options.secure ? '; secure' : '';
   document.cookie = [name, '=', encodeURIComponent(value), expires, path, domain, secure].join('');
 };
-Cookie.prototype.get = function(name, options) {
+Cookie.get = function(name, options) {
   var cookieValue = null;
   if (document.cookie && document.cookie !== '') {
     var cookies = document.cookie.split(';');
@@ -45,9 +45,9 @@ Cookie.prototype.get = function(name, options) {
   }
   return cookieValue;
 };
-cookie_defaults = {expires: 31, path: '/'};
 
 // local setup
+cookie_defaults = {expires: 31, path: '/'};
 $.ajaxSetup({
   type: 'POST',
   dataType: 'json',
@@ -59,7 +59,7 @@ $.ajaxSetup({
 function timestamp() { return (new Date()).getTime(); }
 
 (function($) {
-  function Preloader(urls, $buffer) {
+  function Preloader(urls, $buffer, debug) {
     // urls will be a list of strings
     // each url, on loading, will be stuck in the dom, in a hidden div.
     // keyed by their santized urls as element ids, i.e. url.replace(/\W/g, '')
@@ -73,6 +73,7 @@ function timestamp() { return (new Date()).getTime(); }
     this.processing_queue = false;
     this.$buffer = $buffer;
     this.timeouts = {zero: 20, slow: 80, hard: 200, wait: 200, loop: 250};
+    this.debug = debug === undefined ? false : debug;
     // this.processQueue(); // don't automatically start
   }
   Preloader.prototype.pauseQueue = function() {
@@ -118,6 +119,7 @@ function timestamp() { return (new Date()).getTime(); }
       $.each(preloader.urls.slice(0, preload_limit), function(i, url) {
         if (preloader.cache[url] === undefined) { // it's neither queued nor already loaded.
           return preloader.getMedia({url: url}, function(err, media) {
+            // just ignore the media for now, since it's in the cache
             if (err) { console.log(err); }
             preloader.processing_queue = false;
             return preloader.processQueue('continue');
@@ -128,17 +130,18 @@ function timestamp() { return (new Date()).getTime(); }
   };
   Preloader.prototype.$fromUrl = function(url, make_if_missing) {
     var $element = $('#' + url.replace(/\W/g, ''));
+    if (this.debug) console.log('Preloader.$fromUrl', url, $element.length, make_if_missing);
     if (!$element.length && make_if_missing === true) {
       if (url.match(/\.(mp4|m4v)/)) {
         $element = $('<video width="640" height="360" ' +
           'id="' + url.replace(/\W/g, '') + '" ' +
           'style="display: none" autobuffer preload="auto">' +
-          '<source src="' + url + '" type="video/mp4"></video>').appendTo(this.$prebuffer);
+          '<source src="' + url + '" type="video/mp4"></video>').appendTo(this.$buffer);
       }
       else {
         $element = $('<audio id="' + url.replace(/\W/g, '') + '" ' +
           'style="display: none" autobuffer preload="auto">' +
-          '<source src="' + url + '"></audio>').appendTo(this.$prebuffer);
+          '<source src="' + url + '"></audio>').appendTo(this.$buffer);
       }
     }
     return $element;
@@ -168,7 +171,7 @@ function timestamp() { return (new Date()).getTime(); }
 
     media = this.$fromUrl(url, true)[0];
 
-    console.log("Preloader.getMedia:", media);
+    if (preloader.debug) console.log("Preloader.getMedia id =", media.id);
     
     var $progress, last_buffer_length = 0, buffer_diffs = [];
     (function bufferWatcher() {
@@ -192,6 +195,7 @@ function timestamp() { return (new Date()).getTime(); }
       preloader.updateProgress(url, isNaN(done) ? 0 : done);
 
       var finish = function() {
+        if (preloader.debug) console.log("Preload.getMedia.finish:", url);
         preloader.cache[url] = media; // from null -> cached
         preloader.currently_loading_url = '';
         if (preloader.callbacks[url] !== undefined) {
@@ -245,9 +249,9 @@ function timestamp() { return (new Date()).getTime(); }
   };
 
   // usage: $('#prebuffer').preloader(['list', 'of', 'media', 'files']);
-  $.fn.preloader = function(urls) {
+  $.fn.preloader = function(urls, debug) {
     return this.each(function() {
-      $(this).data('preloader', new Preloader(urls, $(this)));
+      $(this).data('preloader', new Preloader(urls, $(this), debug));
     });
   };
 })(jQuery);
@@ -273,7 +277,7 @@ function timestamp() { return (new Date()).getTime(); }
   $.fn.objectifyForm = function() {
     var store = {};
     this.children('div[id]').each(function() {
-      var $child = $(this),
+      var $field = $(this),
           value = [],
           force_list = false;
       
@@ -302,7 +306,7 @@ function timestamp() { return (new Date()).getTime(); }
         value = value[0];
       }
 
-      store[div.id] = value;
+      store[this.id] = value;
     });
     return store;
   };
@@ -322,7 +326,10 @@ function timestamp() { return (new Date()).getTime(); }
     var $triangle = $('<div class="triangle"></div>').appendTo($bubble);
     
     var bubble_size = $bubble.measureBox(); // { width: 999, height: 999 }
-    var triangle_radius = parseInt($triangle.css('border-width'), 10);
+    var triangle_radius = parseInt($triangle.css('border-top-width'), 10);
+
+    // console.log('bubble_id', id, 'triangle_radius', triangle_radius, 'bubble_size', bubble_size);
+    // return;
     
     if (options.anchor === 'r') {
       $triangle.css({
@@ -333,8 +340,8 @@ function timestamp() { return (new Date()).getTime(); }
       });
 
       $bubble.css({
-        'left': offset.left + size.width,
-        'top': (offset.top + (size.height / 2)) - (bubble_size.height / 2),
+        'left': target_offset.left + target_size.width,
+        'top': (target_offset.top + (target_size.height / 2)) - (bubble_size.height / 2),
         'margin-left': triangle_radius
       });
     }
@@ -348,8 +355,8 @@ function timestamp() { return (new Date()).getTime(); }
       });
 
       $bubble.css({
-        left: (offset.left - bubble_size.width) - triangle_radius,
-        top: (offset.top + (target_size.height / 2)) - (bubble_size.height / 2),
+        left: (target_offset.left - bubble_size.width) - triangle_radius,
+        top: (target_offset.top + (target_size.height / 2)) - (bubble_size.height / 2),
         "margin-right": triangle_radius
       });
     }

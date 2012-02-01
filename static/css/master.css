@@ -271,7 +271,7 @@ table.choices input {
 }
 .bubble .triangle {
   /* like a diamond -- half-diameter measure */
-  border: 10px solid transparent;
+  border: 8px solid transparent;
   width: 0;
   height: 0;
   position: absolute;

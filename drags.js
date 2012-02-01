@@ -64,8 +64,9 @@ function _getUserFromRequest(req, res, callback) {
   });
 }
 
-var surveys = { }, Survey;
+var surveys = { };
 fs.readdirSync(path.join(__dirname, 'surveys')).forEach(function(survey_path) {
+  var Survey;
   if (survey_path[0] !== '.') {
     try {
       Survey = require(path.join(__dirname, 'surveys', survey_path)).Survey;
@@ -86,8 +87,9 @@ function router(req, res) {
   req.cookies = new Cookies(req, res);
   res.setHeader("content-type", "text/html;charset=utf-8");
 
-  var m = null, survey_name, survey;
-  if (m = req.url.match(/^\/([^\/]+)(\/(.*))?$/)) {
+  var survey_name, survey,
+      m = req.url.match(/^\/([^\/]+)(\/(.*))?$/);
+  if (m) {
     req.url = m[3] || '';
 
     survey_name = m[1];
