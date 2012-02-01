@@ -1,130 +1,51 @@
-// The `quickEach` method will pass a non-unique jQuery instance
-// to the callback meaning that there will be no need to instantiate
-// a fresh jQuery instance on each iteration. Most of the slow-down
-// inherent in jQuery's native iterator method (`each`) is the constant
-// need to have access to jQuery's methods, and so most developers
-// see constructing multiple instances as no issue... E.g.
-// $(...).each(function(){ $(this)... $(this)... $(this)... });
-// A better approach would be `quickEach`.
-jQuery.fn.quickEach = (function(){
-  var jq = jQuery([1]);
-  return function(c) {
-    var i = -1, el, len = this.length;
-    try {
-      while (
-         ++i < len &&
-         (el = jq[0] = this[i]) &&
-         c.call(jq, i, el) !== false
-      );
-    } catch(e){
-      delete jq[0];
-      throw e;
-    }
-    delete jq[0];
-    return this;
-  };
-}());
-/**
- * Cookie plugin
- *
- * Copyright (c) 2006 Klaus Hartl (stilbuero.de)
- * Dual licensed under the MIT and GPL licenses:
- * http://www.opensource.org/licenses/mit-license.php
- * http://www.gnu.org/licenses/gpl.html
- *
- */
+if (window.console === undefined) {
+  window.console = {log: function() { } };// just swallow any logs, if there aren't any dev tools available.
+}
 
-/**
- * Create a cookie with the given name and value and other optional parameters.
- *
- * @example $.cookie('the_cookie', 'the_value');
- * @desc Set the value of a cookie.
- * @example $.cookie('the_cookie', 'the_value', { expires: 7, path: '/', domain: 'jquery.com', secure: true });
- * @desc Create a cookie with all available options.
- * @example $.cookie('the_cookie', 'the_value');
- * @desc Create a session cookie.
- * @example $.cookie('the_cookie', null);
- * @desc Delete a cookie by passing null as value. Keep in mind that you have to use the same path and domain
- *     used when the cookie was set.
- *
- * @param String name The name of the cookie.
- * @param String value The value of the cookie.
- * @param Object options An object literal containing key/value pairs to provide optional cookie attributes.
- * @option Number|Date expires Either an integer specifying the expiration date from now on in days or a Date object.
- *               If a negative value is specified (e.g. a date in the past), the cookie will be deleted.
- *               If set to null or omitted, the cookie will be a session cookie and will not be retained
- *               when the the browser exits.
- * @option String path The value of the path atribute of the cookie (default: path of page that created the cookie).
- * @option String domain The value of the domain attribute of the cookie (default: domain of page that created the cookie).
- * @option Boolean secure If true, the secure attribute of the cookie will be set and the cookie transmission will
- *            require a secure protocol (like HTTPS).
- * @type undefined
- *
- * @name $.cookie
- * @cat Plugins/Cookie
- * @author Klaus Hartl/klaus.hartl@stilbuero.de
- */
-
-/**
- * Get the value of a cookie with the given name.
- *
- * @example $.cookie('the_cookie');
- * @desc Get the value of a cookie.
- *
- * @param String name The name of the cookie.
- * @return The value of the cookie.
- * @type String
- *
- * @name $.cookie
- * @cat Plugins/Cookie
- * @author Klaus Hartl/klaus.hartl@stilbuero.de
- *
- * Some modifications by Christopher Brown <io@henrian.com>
- */
-var _cookie_default_options = {}
-jQuery.cookie = function(name, value, options) {
-  if (typeof value != 'undefined') {
-    // name and value given, set cookie
-    options = options || _cookie_default_options;
-    if (value === null) {
-      value = '';
-      options.expires = -1;
-    }
-    var expires = '';
-    if (options.expires && (typeof options.expires == 'number' || options.expires.toUTCString)) {
-      var date;
-      if (typeof options.expires == 'number') {
-        date = new Date();
-        date.setTime(date.getTime() + (options.expires * 24 * 60 * 60 * 1000));
-      } else {
-        date = options.expires;
-      }
-      expires = '; expires=' + date.toUTCString(); // use expires attribute, max-age is not supported by IE
-    }
-    var path = options.path ? ('; path=' + options.path) : '';
-    var domain = options.domain ? ('; domain=' + options.domain) : '';
-    var secure = options.secure ? '; secure' : '';
-    document.cookie = [name, '=', encodeURIComponent(value), expires, path, domain, secure].join('');
-  } else {
-    // only name given, get cookie
-    var cookieValue = null;
-    if (document.cookie && document.cookie != '') {
-      var cookies = document.cookie.split(';');
-      for (var i = 0; i < cookies.length; i++) {
-        var cookie = jQuery.trim(cookies[i]);
-        // Does this cookie string begin with the name we want?
-        if (cookie.substring(0, name.length + 1) == (name + '=')) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
-      }
-    }
-    return cookieValue;
+// Cookie plugin Copyright (c) 2006 Klaus Hartl (stilbuero.de)
+// Dual licensed under the MIT and GPL licenses.
+// Some modifications by Christopher Brown <io@henrian.com>
+var cookie_defaults = {};
+function Cookie() {}
+Cookie.prototype.set = function(name, value, options) {
+  // name and value given, set cookie
+  options = options || _cookie_default_options;
+  if (value === null) {
+    value = '';
+    options.expires = -1;
   }
+  var expires = '';
+  if (options.expires && (typeof options.expires == 'number' || options.expires.toUTCString)) {
+    var date;
+    if (typeof options.expires == 'number') {
+      date = new Date();
+      date.setTime(date.getTime() + (options.expires * 24 * 60 * 60 * 1000));
+    } else {
+      date = options.expires;
+    }
+    expires = '; expires=' + date.toUTCString(); // use expires attribute, max-age is not supported by IE
+  }
+  var path = options.path ? ('; path=' + options.path) : '';
+  var domain = options.domain ? ('; domain=' + options.domain) : '';
+  var secure = options.secure ? '; secure' : '';
+  document.cookie = [name, '=', encodeURIComponent(value), expires, path, domain, secure].join('');
 };
-jQuery.cookieSetup = function(options) {
-  _cookie_default_options = options;
+Cookie.prototype.get = function(name, options) {
+  var cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    var cookies = document.cookie.split(';');
+    for (var i = 0; i < cookies.length; i++) {
+      var cookie = jQuery.trim(cookies[i]);
+      // Does this cookie string begin with the name we want?
+      if (cookie.substring(0, name.length + 1) == (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
 };
+cookie_defaults = {expires: 31, path: '/'};
 
 // local setup
 $.ajaxSetup({
@@ -134,319 +55,314 @@ $.ajaxSetup({
   accepts: 'application/json',
   processData: false
 });
-$.cookieSetup({
-  expires: 31,
-  path: '/'
-});
 
-//fgnass.github.com/spin.js
-(function(window, document, undefined) {
+function timestamp() { return (new Date()).getTime(); }
 
-/**
- * Copyright (c) 2011 Felix Gnass [fgnass at neteye dot de]
- * Licensed under the MIT license
- *
- * Unfortunately uglify.js doesn't provide an option to de-duplicate strings
- * or to use string-based property access. Hence we have to manually define
- * some string constants in order to keep file-size below our 3K limit, as
- * one of the design goals was to create a script that is smaller than an
- * animated GIF.
- */
-
-  var width = 'width',
-      length = 'length',
-      radius = 'radius',
-      lines = 'lines',
-      trail = 'trail',
-      color = 'color',
-      opacity = 'opacity',
-      speed = 'speed',
-      shadow = 'shadow',
-      style = 'style',
-      height = 'height',
-      left = 'left',
-      top = 'top',
-      px = 'px',
-      childNodes = 'childNodes',
-      firstChild = 'firstChild',
-      parentNode = 'parentNode',
-      position = 'position',
-      relative = 'relative',
-      absolute = 'absolute',
-      animation = 'animation',
-      transform = 'transform',
-      Origin = 'Origin',
-      Timeout = 'Timeout',
-      coord = 'coord',
-      black = '#000',
-      styleSheets = style + 'Sheets',
-      prefixes = "webkit0Moz0ms0O".split(0), /* Vendor prefixes, separated by zeros */
-      animations = {}, /* Animation rules keyed by their name */
-      useCssAnimations;
-
-  /**
-   *
-   */
-  function eachPair(args, it) {
-    var end = ~~((args[length]-1)/2);
-    for (var i = 1; i <= end; i++) {
-      it(args[i*2-1], args[i*2]);
-    }
+(function($) {
+  function Preloader(urls, $buffer) {
+    // urls will be a list of strings
+    // each url, on loading, will be stuck in the dom, in a hidden div.
+    // keyed by their santized urls as element ids, i.e. url.replace(/\W/g, '')
+    this.urls = urls;
+    this.cache = {}; // keyed by url. The value is null while being loaded, and the element when completed.
+    this.callbacks = {}; // keyed by url, lists of callbacks for when a particular movie is done.
+    this.progresses = {}; // keyed by url, jQuery elements | undefined
+    this.currently_loading_url = '';
+    // this.index = 0;
+    this.paused = false;
+    this.processing_queue = false;
+    this.$buffer = $buffer;
+    this.timeouts = {zero: 20, slow: 80, hard: 200, wait: 200, loop: 250};
+    // this.processQueue(); // don't automatically start
   }
-
-  /**
-   * Utility function to create elements. If no tag name is given, a DIV is created.
-   */
-  function createEl(tag) {
-    var el = document.createElement(tag || 'div');
-    eachPair(arguments, function(prop, val) {
-      el[prop] = val;
-    });
-    return el;
-  }
-
-  function ins(parent, child1, child2) {
-    if(child2 && !child2[parentNode]) ins(parent, child2);
-    parent.insertBefore(child1, child2||null);
-    return parent;
-  }
-
-  /**
-   * Insert a new stylesheet to hold the @keyframe or VML rules.
-   */
-  ins(document.getElementsByTagName('head')[0], createEl(style));
-  var sheet = document[styleSheets][document[styleSheets][length] - 1];
-
-  /**
-   * Creates an opacity keyframe animation rule.
-   */
-  function addAnimation(to, end) {
-    var name = [opacity, end, ~~(to*100)].join('-'),
-        dest = '{' + opacity + ':' + to + '}',
-        i;
-
-    if (!animations[name]) {
-      for (i=0; i<prefixes[length]; i++) {
-        try {
-          sheet.insertRule('@' +
-            (prefixes[i] && '-'+prefixes[i].toLowerCase() +'-' || '') +
-            'keyframes ' + name + '{0%{' + opacity + ':1}' +
-            end + '%' + dest + 'to' + dest + '}', sheet.cssRules[length]);
-        }
-        catch (err) {
-        }
-      }
-      animations[name] = 1;
-    }
-    return name;
-  }
-
-  /**
-   * Tries various vendor prefixes and returns the first supported property.
-   **/
-  function vendor(el, prop) {
-    var s = el[style],
-        pp,
-        i;
-
-    if(s[prop] !== undefined) return prop;
-    prop = prop.charAt(0).toUpperCase() + prop.slice(1);
-    for(i=0; i<prefixes[length]; i++) {
-      pp = prefixes[i]+prop;
-      if(s[pp] !== undefined) return pp;
-    }
-  }
-
-  /**
-   * Sets multiple style properties at once.
-   */
-  function css(el) {
-    eachPair(arguments, function(n, val) {
-      el[style][vendor(el, n)||n] = val;
-    });
-    return el;
-  }
-
-  /**
-   * Fills in default values. The values are passed as argument pairs rather
-   * than as object in order to save some extra bytes.
-   */
-  function defaults(obj) {
-    eachPair(arguments, function(prop, val) {
-      if (obj[prop] === undefined) obj[prop] = val;
-    });
-    return obj;
-  }
-
-  /** The constructor */
-  var Spinner = function Spinner(o) {
-    this.opts = defaults(o || {},
-      lines, 12,
-      trail, 100,
-      length, 7,
-      width, 5,
-      radius, 10,
-      color, black,
-      opacity, 1/4,
-      speed, 1);
-  },
-  proto = Spinner.prototype = {
-    spin: function(target) {
-      var self = this,
-          el = self.el = self[lines](self.opts);
-
-      if (target) {
-        ins(target, css(el,
-          left, ~~(target.offsetWidth/2) + px,
-          top, ~~(target.offsetHeight/2) + px
-        ), target[firstChild]);
-      }
-      if (!useCssAnimations) {
-        // No CSS animation support, use setTimeout() instead
-        var o = self.opts,
-            i = 0,
-            f = 20/o[speed],
-            ostep = (1-o[opacity])/(f*o[trail] / 100),
-            astep = f/o[lines];
-
-        (function anim() {
-          i++;
-          for (var s=o[lines]; s; s--) {
-            var alpha = Math.max(1-(i+s*astep)%f * ostep, o[opacity]);
-            self[opacity](el, o[lines]-s, alpha, o);
-          }
-          self[Timeout] = self.el && window['set'+Timeout](anim, 50);
-        })();
-      }
-      return self;
-    },
-    stop: function() {
-      var self = this,
-          el = self.el;
-
-      window['clear'+Timeout](self[Timeout]);
-      if (el && el[parentNode]) el[parentNode].removeChild(el);
-      self.el = undefined;
-      return self;
-    }
+  Preloader.prototype.pauseQueue = function() {
+    this.paused = true;
   };
-  proto[lines] = function(o) {
-    var el = css(createEl(), position, relative),
-        animationName = addAnimation(o[opacity], o[trail]),
-        i = 0,
-        seg;
-
-    function fill(color, shadow) {
-      return css(createEl(),
-        position, absolute,
-        width, (o[length]+o[width]) + px,
-        height, o[width] + px,
-        'background', color,
-        'boxShadow', shadow,
-        transform + Origin, left,
-        transform, 'rotate(' + ~~(360/o[lines]*i) + 'deg) translate(' + o[radius]+px +',0)',
-        'borderRadius', '100em'
-      );
+  Preloader.prototype.abortPreload = function(url) {
+    this.pauseQueue();
+    if (url === undefined) {
+      url = this.currently_loading_url;
     }
-    for (; i < o[lines]; i++) {
-      seg = css(createEl(),
-        position, absolute,
-        top, 1+~(o[width]/2) + px,
-        transform, 'translate3d(0,0,0)',
-        animation, animationName + ' ' + 1/o[speed] + 's linear infinite ' + (1/o[lines]/o[speed]*i - 1/o[speed]) + 's'
-      );
-      if (o[shadow]) ins(seg, css(fill(black, '0 0 4px ' + black), top, 2+px));
-      ins(el, ins(seg, fill(o[color], '0 0 1px rgba(0,0,0,.1)')));
+    var $element = this.$fromUrl(url);
+    // url = $source.attr('src');
+    $element.children('source').attr('src', '');
+    if ($element[0] && $element[0].load) {
+      $element[0].load();
     }
-    return el;
+    $element.remove();
+    
+    delete this.cache[url];
   };
-  proto[opacity] = function(el, i, val) {
-    el[childNodes][i][style][opacity] = val;
+  Preloader.prototype.unpauseQueue = function() {
+    this.paused = false;
+    this.processQueue();
   };
-
-  ///////////////////////////////////////////////////////////////////////////////
-  // VML rendering for IE
-  ///////////////////////////////////////////////////////////////////////////////
-
-  var behavior = 'behavior',
-      URL_VML = 'url(#default#VML)',
-      tag = 'group0roundrect0fill0stroke'.split(0);
-
-  /**
-   * Check and init VML support
-   */
-  (function() {
-    var s = css(createEl(tag[0]), behavior, URL_VML),
-        i;
-
-    if (!vendor(s, transform) && s.adj) {
-      // VML support detected. Insert CSS rules for group, shape and stroke.
-      for (i=0; i < tag[length]; i++) {
-        sheet.addRule(tag[i], behavior + ':' + URL_VML);
-      }
-      proto[lines] = function() {
-        var o = this.opts,
-            r = o[length]+o[width],
-            s = 2*r;
-
-        function grp() {
-          return css(createEl(tag[0], coord+'size', s +' '+s, coord+Origin, -r + ' ' + -r), width, s, height, s);
-        }
-
-        var g = grp(),
-            margin = ~(o[length]+o[radius]+o[width])+px,
-            i;
-
-        function seg(i, dx, filter) {
-          ins(g,
-            ins(css(grp(), 'rotation', 360 / o[lines] * i + 'deg', left, ~~dx),
-              ins(css(createEl(tag[1], 'arcsize', 1), width, r, height, o[width], left, o[radius], top, -o[width]/2, 'filter', filter),
-                createEl(tag[2], color, o[color], opacity, o[opacity]),
-                createEl(tag[3], opacity, 0) // transparent stroke to fix color bleeding upon opacity change
-              )
-            )
-          );
-        }
-
-        if (o[shadow]) {
-          for (i = 1; i <= o[lines]; i++) {
-            seg(i, -2, 'progid:DXImage'+transform+'.Microsoft.Blur(pixel'+radius+'=2,make'+shadow+'=1,'+shadow+opacity+'=.3)');
-          }
-        }
-        for (i = 1; i <= o[lines]; i++) {
-          seg(i);
-        }
-        return ins(css(createEl(),
-          'margin', margin + ' 0 0 ' + margin,
-          position, relative
-        ), g);
-      };
-      proto[opacity] = function(el, i, val, o) {
-        o = o[shadow] && o[lines] || 0;
-        el[firstChild][childNodes][i+o][firstChild][firstChild][opacity] = val;
-      };
+  Preloader.prototype.onLoaded = function(url, callback) {
+    // callback signature: function(err, raw_media_element) -- same as getMedia
+    // these will be called before getMedia's own callback is called
+    if (this.callbacks[url] === undefined) {
+      this.callbacks[url] = [];
+    }
+    this.callbacks[url].push(callback);
+  };
+  Preloader.prototype.processQueue = function(state) {
+    var preloader = this;
+    if (preloader.paused) {
+      preloader.processing_queue = false;
+    }
+    else if (preloader.processing_queue && state !== 'continue') {
+      preloader.processing_queue = false;
     }
     else {
-      useCssAnimations = vendor(s, animation);
+      preloader.processing_queue = true;
+      $.each(preloader.urls.slice(0, preload_limit), function(i, url) {
+        if (preloader.cache[url] === undefined) { // it's neither queued nor already loaded.
+          return preloader.getMedia({url: url}, function(err, media) {
+            if (err) { console.log(err); }
+            preloader.processing_queue = false;
+            return preloader.processQueue('continue');
+          });
+        }
+      });
     }
-  })();
-
-  window.Spinner = Spinner;
-
-})(window, document);
-
-
-$.fn.spin = function(opts) {
-  this.each(function() {
-    var $this = $(this),
-        spinner = $this.data('spinner');
-
-    if (spinner) spinner.stop();
-    if (opts !== false) {
-      opts = $.extend({color: $this.css('color')}, opts);
-      spinner = new Spinner(opts).spin(this);
-      $this.data('spinner', spinner);
+  };
+  Preloader.prototype.$fromUrl = function(url, make_if_missing) {
+    var $element = $('#' + url.replace(/\W/g, ''));
+    if (!$element.length && make_if_missing === true) {
+      if (url.match(/\.(mp4|m4v)/)) {
+        $element = $('<video width="640" height="360" ' +
+          'id="' + url.replace(/\W/g, '') + '" ' +
+          'style="display: none" autobuffer preload="auto">' +
+          '<source src="' + url + '" type="video/mp4"></video>').appendTo(this.$prebuffer);
+      }
+      else {
+        $element = $('<audio id="' + url.replace(/\W/g, '') + '" ' +
+          'style="display: none" autobuffer preload="auto">' +
+          '<source src="' + url + '"></audio>').appendTo(this.$prebuffer);
+      }
     }
-  });
-  return this;
-};
+    return $element;
+  };
+  Preloader.prototype.updateProgress = function(url, done) {
+    var $progress = this.progresses[url];
+    if ($progress && $progress.length) {
+      $progress.html('<div class="progress-bar">' +
+        '<div style="width: ' + (done * 100).toFixed(0) + '%;">&nbsp;</div></div>');
+    }
+  };
+  Preloader.prototype.getMedia = function(options, callback) {
+    // async, callback signature: function(err, element)
+    // options = { url: 'whatever', rush: undefined or true }
+    var url = options.url, media, preloader = this;
+
+    if (this.cache[url] !== undefined) {
+      if (this.cache[url] !== null) {
+        return callback(undefined, this.cache[url]);
+      }
+      else {
+        return this.onLoaded(url, callback);
+      }
+    }
+    this.cache[url] = null; // from undefined -> null
+    this.currently_loading_url = url;
+
+    media = this.$fromUrl(url, true)[0];
+
+    console.log("Preloader.getMedia:", media);
+    
+    var $progress, last_buffer_length = 0, buffer_diffs = [];
+    (function bufferWatcher() {
+      if (!media) {
+        return callback({type: 'UrlError',
+          message: 'Media cannot be inserted with default html for that url: ' + url});
+      }
+
+      var buffer_length = (media.buffered && media.buffered.length > 0) ? media.buffered.end(0) : 0,
+          buffer_diff = buffer_length - last_buffer_length,
+          done = buffer_length / media.duration;
+      last_buffer_length = buffer_length;
+
+      buffer_diffs.push(buffer_diff);
+      var calls = buffer_diffs.length;
+      var last_10_diff = 0;
+      for (var j = calls - 1; j >= calls - 10 && j >= 0; j--) {
+        last_10_diff += buffer_diffs[j];
+      }
+      
+      preloader.updateProgress(url, isNaN(done) ? 0 : done);
+
+      var finish = function() {
+        preloader.cache[url] = media; // from null -> cached
+        preloader.currently_loading_url = '';
+        if (preloader.callbacks[url] !== undefined) {
+          $.each(preloader.callbacks[url], function(i, loaded_callback) {
+            loaded_callback(undefined, media);
+          });
+        }
+        callback(undefined, media);
+      };
+
+      if (done > 0.99) {
+        finish(); // normal completion
+      }
+      // test if anything crazy has happened
+      else if (preloader.cache[url] === undefined) {
+        callback("That media was deleted from the DOM. Exiting the buffer process.");
+      }
+      else if (options.rush === true) {
+        if (calls > 10 && last_10_diff < 0.01 && done > 0.5) {
+          finish(); // sometimes Chrome doesn't feel like loading the whole movie. Okay, fine.
+        }
+        else {
+          setTimeout(bufferWatcher, preloader.timeouts.loop);
+        }
+      }
+      else {
+        if (calls > preloader.timeouts.zero && last_10_diff < 0.01 && done > 0.5) {
+          finish(); // it seems that Chrome isn't ever going to preload the whole media
+        }
+        else if (calls > preloader.timeouts.slow && buffer_length === 0) {
+          console.log("The media cannot be found or loaded.");
+          callback(undefined, '<p>This media is missing.</p>');
+        }
+        else if (calls > preloader.timeouts.slow && last_10_diff < 0.01) {
+          finish();
+        }
+        else if (calls > preloader.timeouts.hard) {
+          finish();
+        }
+        else if (calls > preloader.timeouts.wait) {
+          console.log("The media is taking longer than " +
+            preloader.timeouts.wait * (preloader.timeouts.loop / 1000) +
+            " seconds to load. It'll just have to play, nonetheless.");
+          finish();
+        }
+        else {
+          setTimeout(bufferWatcher, preloader.timeouts.loop);
+        }
+      }
+    })();
+  };
+
+  // usage: $('#prebuffer').preloader(['list', 'of', 'media', 'files']);
+  $.fn.preloader = function(urls) {
+    return this.each(function() {
+      $(this).data('preloader', new Preloader(urls, $(this)));
+    });
+  };
+})(jQuery);
+
+(function($) {
+  $.fn.measureBox = function() {
+    return {
+      width: this.width() +
+        parseInt(this.css('border-left-width'), 10) +
+        parseInt(this.css('border-right-width'), 10) +
+        parseInt(this.css('padding-left'), 10) +
+        parseInt(this.css('padding-right'), 10),
+      height: this.height() +
+        parseInt(this.css('border-top-width'), 10) +
+        parseInt(this.css('border-bottom-width'), 10) +
+        parseInt(this.css('padding-top'), 10) +
+        parseInt(this.css('padding-bottom'), 10)
+    };
+  };
+})(jQuery);
+
+(function($) {
+  $.fn.objectifyForm = function() {
+    var store = {};
+    this.children('div[id]').each(function() {
+      var $child = $(this),
+          value = [],
+          force_list = false;
+      
+      $field.find("input[type='text']").each(function(i, el) {
+        value.push(el.value);
+      });
+      $field.find("input[type='password']").each(function(i, el) {
+        value.push(el.value);
+      });
+      if ($field.find("input[type='checkbox']").length > 1) {
+        force_list = true;
+      }
+
+      // for each checkbox/radiobutton get the id, find the label[for=<that-id>].innerText, use that as value
+      $field.find("input[type='checkbox']:checked").each(function(i, el) {
+        value.push($field.find("label[for='" + el.id + "']").text());
+      });
+      $field.find("input[type='radio']:checked").each(function(i, el) {
+        value.push($field.find("label[for='" + el.id + "']").text());
+      });
+
+      if (value.length === 0) {
+        value = null;
+      }
+      else if (value.length === 1 && !force_list) {
+        value = value[0];
+      }
+
+      store[div.id] = value;
+    });
+    return store;
+  };
+})(jQuery);
+
+(function($) {
+  // requires $.fn.measureBox
+  function drawBubble($target, text, options) {
+    if (options === undefined) options = {};
+    if (options.anchor === undefined) options.anchor = 'r';
+    if (options.attach === undefined) options.attach = $(document.body);
+    if (text === undefined) text = '!!!';
+    var target_offset = $target.offset(), // { left: 999, top: 999 }
+        target_size = $target.measureBox(), // { width: 999, height: 999 }
+        id = "bubble_" + ((Math.random() * 999999) | 0);
+    var $bubble = $('<div id="' + id + '" class="bubble">' + text + '</div>').appendTo(options.attach);
+    var $triangle = $('<div class="triangle"></div>').appendTo($bubble);
+    
+    var bubble_size = $bubble.measureBox(); // { width: 999, height: 999 }
+    var triangle_radius = parseInt($triangle.css('border-width'), 10);
+    
+    if (options.anchor === 'r') {
+      $triangle.css({
+        'border-left-width': 0,
+        'border-right-color': $bubble.css('background-color'),
+        'top': (bubble_size.height - (triangle_radius * 2)) / 2,
+        'left': -triangle_radius
+      });
+
+      $bubble.css({
+        'left': offset.left + size.width,
+        'top': (offset.top + (size.height / 2)) - (bubble_size.height / 2),
+        'margin-left': triangle_radius
+      });
+    }
+    else if (options.anchor === 'l') {
+      $triangle.css({
+        'border-right-width': 0,
+        'border-left-color': $bubble.css('background-color'),
+        'top': (bubble_size.height - (triangle_radius * 2)) / 2,
+        'left': "auto",
+        'right': -triangle_radius
+      });
+
+      $bubble.css({
+        left: (offset.left - bubble_size.width) - triangle_radius,
+        top: (offset.top + (target_size.height / 2)) - (bubble_size.height / 2),
+        "margin-right": triangle_radius
+      });
+    }
+
+    $bubble.one('click', function() {
+      $bubble.fadeOut(50).remove();
+    });
+  }
+
+  // @options: { anchor: 't' | 'r' | 'l' | 'b', attach: $(document.body) }
+  $.fn.bubble = function(text, options) {
+    return this.each(function() {
+      drawBubble($(this), text, options);
+    });
+  };
+})(jQuery);
