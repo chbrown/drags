@@ -83,7 +83,7 @@ function timestamp() { return (new Date()).getTime(); }
     this.processing_queue = false;
   };
   Preloader.prototype.abortPreload = function(url) {
-    if (this.debug) console.log('Preloader.abortPreload. url:', url, 'processing_queue', this.processing_queue);
+    if (this.debug) console.log('Preloader.abortPreload. url:', url, 'processing_queue:', this.processing_queue);
     this.pauseQueue();
     if (url === undefined) {
       url = this.currently_loading_url;
@@ -99,6 +99,7 @@ function timestamp() { return (new Date()).getTime(); }
     delete this.cache[url];
   };
   Preloader.prototype.unpauseQueue = function() {
+    if (this.debug) console.log('Preloader.unpauseQueue.');
     this.paused = false;
     this.processQueue();
   };
@@ -111,6 +112,10 @@ function timestamp() { return (new Date()).getTime(); }
     this.callbacks[url].push(callback);
   };
   Preloader.prototype.processQueue = function(state) {
+    if (this.debug) {
+      console.log('Preloader.processQueue: processing_queue:', preloader.processing_queue,
+        'paused:', preloader.paused, 'state:', state);
+    }
     // this should respect this.paused == false (it should not override it)
     var preloader = this;
     if (preloader.paused) {
@@ -140,8 +145,7 @@ function timestamp() { return (new Date()).getTime(); }
       }
       else {
         if (preloader.debug) {
-          console.log('Preloader.processQueue called vacuously (preloading is done).',
-            'processing_queue:', preloader.processing_queue, 'paused:', preloader.paused);
+          console.log('Preloader.processQueue called, but the queue has already finished preloaded.');
         }
         preloader.processing_queue = false;
       }
