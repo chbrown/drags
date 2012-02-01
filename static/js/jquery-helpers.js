@@ -113,8 +113,8 @@ function timestamp() { return (new Date()).getTime(); }
   };
   Preloader.prototype.processQueue = function(state) {
     if (this.debug) {
-      console.log('Preloader.processQueue: processing_queue:', preloader.processing_queue,
-        'paused:', preloader.paused, 'state:', state);
+      console.log('Preloader.processQueue: processing_queue:', this.processing_queue,
+        'paused:', this.paused, 'state:', state);
     }
     // this should respect this.paused == false (it should not override it)
     var preloader = this;
