@@ -9,7 +9,7 @@ var cookie_defaults = {};
 function Cookie() {}
 Cookie.set = function(name, value, options) {
   // name and value given, set cookie
-  options = options || _cookie_default_options;
+  options = options || cookie_defaults;
   if (value === null) {
     value = '';
     options.expires = -1;
