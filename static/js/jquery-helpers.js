@@ -117,16 +117,25 @@ function timestamp() { return (new Date()).getTime(); }
     }
     else {
       preloader.processing_queue = true;
-      $.each(preloader.urls.slice(0, preload_limit), function(i, url) {
-        if (preloader.cache[url] === undefined) { // it's neither queued nor already loaded.
-          return preloader.getMedia({url: url}, function(err, media) {
-            // just ignore the media for now, since it's in the cache
-            if (err) { console.log(err); }
-            preloader.processing_queue = false;
-            return preloader.processQueue('continue');
-          });
+      var next_url = null;
+      for (var ii = 0; ii < preload_limit && ii < preloader.urls.length; ii++) {
+        var url = preloader.urls[ii];
+        if (preloader.cache[url] === undefined) {
+          // it's neither queued nor already loaded.
+          next_url = url;
+          break;
         }
-      });
+      }
+      if (next_url) {
+        return preloader.getMedia({url: next_url}, function(err, media) {
+          // just ignore the media for now, since it's in the cache
+          if (err) { console.log(err); }
+          return preloader.processQueue('continue');
+        });
+      }
+      else {
+        preloader.processing_queue = false;
+      }
     }
   };
   Preloader.prototype.$fromUrl = function(url, make_if_missing) {
@@ -227,7 +236,7 @@ function timestamp() { return (new Date()).getTime(); }
           finish(); // it seems that Chrome isn't ever going to preload the whole media
         }
         else if (calls > preloader.timeouts.slow && buffer_length === 0) {
-          console.log("The media cannot be found or loaded.");
+          console.log("The media cannot be found or loaded.", url, media);
           callback(undefined, '<p>This media is missing.</p>');
         }
         else if (calls > preloader.timeouts.slow && last_10_diff < 0.01) {
