@@ -127,7 +127,11 @@ function timestamp() { return (new Date()).getTime(); }
   };
   Preloader.prototype.$fromUrl = function(url, make_if_missing) {
     var $element = $('#' + url.replace(/\W/g, ''));
-    if (this.debug) console.log('Preloader.$fromUrl', url, $element.length, make_if_missing);
+    if (this.debug) {
+      console.log('Preloader.$fromUrl', url,
+        'existing:', $element.length,
+        'make_if_missing:',make_if_missing);
+    }
     if (!$element.length && make_if_missing === true) {
       var id = url.replace(/\W/g, '');
       if (url.match(/\.(mp4|m4v)$/)) {
@@ -161,9 +165,10 @@ function timestamp() { return (new Date()).getTime(); }
 
     var $progress, last_buffer_length = 0, buffer_diffs = [];
     (function bufferWatcher() {
-      if (preloader.queue.indexOf(url) > -1) {
+      if (!rush && preloader.queue.indexOf(url) > -1) {
         if (preloader.debug) console.log("  bufferWatcher: media aborted:", media);
-        return callback(undefined, 'media aborted, retry');
+        return callback({type: 'MediaError',
+          message: 'Media aborted, will resume at beginning of queue.'});
       }
       if (!media) {
         if (preloader.debug) console.log("  bufferWatcher: missing media:", media);
