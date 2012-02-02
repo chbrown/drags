@@ -163,6 +163,14 @@ function timestamp() { return (new Date()).getTime(); }
     var preloader = this, media = this.$fromUrl(url, true)[0];
     this.currently_loading_url = url;
 
+    // quick exit for the simple image case
+    if (url.match(/\.jpg/)) {
+      setTimeout(function() {
+        preloader._gotMedia(media, callback);
+      }, 0);
+      return;
+    }
+
     var $progress, last_buffer_length = 0, buffer_diffs = [];
     (function bufferWatcher() {
       if (!rush && preloader.queue.indexOf(url) > -1) {
