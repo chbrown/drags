@@ -253,14 +253,6 @@ table.choices input {
   padding: 8px 0 2px 12px;
 }
 
-.download-csv {
-  margin: 20px 0;
-}
-
-.download-csv img {
-  vertical-align: -20%;
-}
-
 .bubble {
   position: absolute;
   background: #465170;

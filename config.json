@@ -7,7 +7,7 @@
   },
   "server": {
     "host": "127.0.0.1",
-    "port": 4181,
+    "port": 1302,
     "socket": "node.sock"
   },
   "datetime_format": "FMMonth FMDD, YYYY, FMHH:MI am"
