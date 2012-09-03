@@ -48,61 +48,19 @@ button::-moz-focus-inner,input::-moz-focus-inner{border:0;padding:0;}
 textarea{overflow:auto;vertical-align:top;}
 table{border-collapse:collapse;border-spacing:0;}
 .nowrap{white-space:nowrap;}
-body{font-family:Arial, Verdana;font-size:12px;background:url('/images/bg-noise.gif') repeat top left;}
-a{color:#1d2a41;}
-a:hover{color:#1b376a;}
-.bold{font-weight:bold;}
-#super-container{background:url('/images/bg-gradient.gif') repeat-x top left;}
-#container{width:720px;margin:0 auto;padding:20px;}
-#flash{position:fixed;top:0;left:0;right:0;vertical-align:middle;background-color:rgba(29, 64, 99, 0.95);color:white;font-size:100%;border-bottom:1px solid rgba(0, 0, 0, 0.5);padding:4px 10px;display:none;}
-.icon{display:inline-block;width:48px;height:48px;background-image:url('/images/glyph-icons.png');vertical-align:middle;}
-a .icon-chat2{background-position:0px 0px;}
-a:hover .icon-chat2{background-position:0px -48px;}
-a.disabled:hover .icon-chat2{background-position:0px -96px;}
-a.disabled.hover .icon-chat2{background-position:0px -96px;}
-h2{font-size:120%;margin-bottom:1ex;font-weight:bold;margin-bottom:2ex;}
-p{margin-bottom:1.5ex;}
-ul{list-style:circle;}
-ul li{margin:1.5ex 1.5em;}
-strong{font-weight:bold;}
-em{font-style:italic;}
-.page{margin:20px 10px;padding:10px;border:1px dotted #444;text-align:center;}
-.play{text-align:center;}
+body{font-family:Arial, Verdana;font-size:12px;}
+a{color:#2d3a51;}
+a:hover{color:#2b578a;}
+#container{background:white;width:720px;margin:0 auto;padding:30px;}
 table.stimuli{width:90%;margin:10px auto 20px auto;}table.stimuli td{text-align:center;vertical-align:middle;width:33%;}
 table.stimuli td.control{font-size:110%;}
 table.stimuli_choice{margin:0 auto;}table.stimuli_choice td{font-size:110%;text-align:left;padding:3px;width:auto;}
-table.sureness{width:100%;margin:0 auto 10px;}
-table.sureness td.label{width:15%;vertical-align:top;font-size:90%;}
-table.sureness td.input{padding-top:0.75ex;font-size:12px;}
-.slider{margin:0 1em;}
-#debug{position:fixed;top:0;left:0;padding:2px 4px;font-size:80%;font-variant:small-caps;}
-a#next{margin:20px;display:block;}
-#progress_footer{position:fixed;bottom:1ex;width:100%;left:0;right:0;font-size:80%;line-height:1.5;}
-#progress_footer td{vertical-align:top;}
-#progressbar{height:8px;}
-#shortcuts_button{font-size:90%;font-variant:small-caps;}
-#shortcuts_button:link{text-decoration:none;}
-#shortcuts_button:hover{text-decoration:underline;}
-#shortcuts{margin:8px;font-size:90%;}
-#shortcuts table{margin-top:5px;}
-#shortcuts td.key{font-family:"Courier New",Courier,sans-serif;padding-right:12px;text-align:center;}
-.left{text-align:left;}
-.right{text-align:right;}
-.center{text-align:center;}
-.small{font-size:90%;}
-.smaller{font-size:80%;}
-table.padcell td{padding:2px 4px;}
-table.twocol{width:100%;}
-table.twocol td{width:50%;}
-table.choices td{padding:10px;}
-table.choices img{display:block;width:160px;height:160px;}
-table.choices .input{margin:10px auto;text-align:center;}
-table.choices input{font-size:120%;padding:2px 20px;}
-#form div{padding-left:5px;}
-#form label{display:block;margin:20px 0 5px 0;font-weight:bold;font-size:98%;}
-#form label.radio{display:inline;font-weight:normal;font-size:100%;vertical-align:bottom;padding:0 8px 0 2px;}
-#form .other{padding:8px 0 2px 12px;}
 .progress-bar{border:1px solid black;height:10px;width:100%;}.progress-bar div{background-color:black;height:10px;}
-.flag{position:absolute;background-color:black;border-radius:4px;padding:2px;color:white;font-size:90%;}.flag .triangle{display:inline-block;position:absolute;border:6px solid transparent;width:0;height:0;}
+table.choices{text-align:center;}table.choices img{width:160px;height:160px;}
+table.choices button{font-size:110%;padding:3px 30px;}
+input[type=text],input[type=password]{margin:2px 0 8px;display:block;}
+#form >div[id]{margin:15px 0;}
+#form label{display:block;font-weight:bold;}#form label input[type=radio],#form label input[type=checkbox]{margin:4px 2px 5px 2px;}
+.flag{position:absolute;background-color:black;border-radius:4px;padding:3px;color:white;}.flag .triangle{display:inline-block;position:absolute;border:6px solid transparent;width:0;height:0;}
 .flag .subflag{display:inline-block;}.flag .subflag span,.flag .subflag a{display:inline-block;padding:0 4px;}
 .flag .subflag a{background-color:white;border-radius:2px;}

@@ -26,19 +26,20 @@ function alphaDecimal(length) {
   return string;
 }
 
-User.statics.create = function(callback) {
-  var user = new User({tickets: [alphaDecimal(32)]});
+user_schema.statics.create = function(callback) {
+  var user = new this({tickets: [alphaDecimal(32)]});
   user.save(function(err, user) {
     if (err) console.error("Error creating new user:", err);
     callback(user);
   });
 };
 
-User.statics.fromTicket = function(ticket, callback) {
-  User.findOne({tickets: ticket}).sort('-created').exec(function(err, user) {
+user_schema.statics.fromTicket = function(ticket, callback) {
+  var self = this;
+  this.findOne({tickets: ticket}).sort('-created').exec(function(err, user) {
     if (err) console.error("Error finding user by ticket:", err);
     if (!user) {
-      User.create(function(user) {
+      self.create(function(user) {
         callback(user);
       });
     }
@@ -49,4 +50,5 @@ User.statics.fromTicket = function(ticket, callback) {
 };
 
 var User = db.model('User', user_schema);
+
 module.exports.User = User;

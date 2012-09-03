@@ -1,13 +1,16 @@
 var fs = require('fs'),
   path = require('path'),
   http = require('http'),
-  mongoose = require('mongoose'),
+  models = require('./models'),
   amulet = require('amulet'),
   Cookies = require('cookies'),
   wrappers = require('wrappers'),
   argv = require('optimist').argv,
   port = argv.port || 1301,
   surveys = {};
+
+// process.env.NODE_PATH = __dirname;
+// console.log('require.paths', process.env.NODE_PATH);
 
 amulet.set({minify: true, root: __dirname});
 
@@ -17,17 +20,20 @@ Cookies.prototype.defaults = function() {
   return { expires: expires, httpOnly: false };
 };
 
-fs.readdir(path.join(__dirname, 'surveys'), function(err, survey_path) {
-  if (survey_path[0] !== '.') {
-    try {
-      surveys[survey_path] = require(path.join(__dirname, 'surveys', survey_path));
-      console.log("Loaded survey: " + survey_path);
+fs.readdir(path.join(__dirname, 'surveys'), function(err, survey_paths) {
+  survey_paths.forEach(function(survey_path) {
+    if (survey_path[0] !== '.') {
+      try {
+        surveys[survey_path] = require(path.join(__dirname, 'surveys', survey_path));
+        console.log("Loaded survey: " + survey_path);
+      }
+      catch (exc) {
+        console.error("Couldn't load survey: " + survey_path + ".");
+        throw exc;
+        // console.dir(exc);
+      }
     }
-    catch (exc) {
-      console.error("Couldn't load survey: " + survey_path + ".");
-      console.dir(exc);
-    }
-  }
+  });
 });
 
 http.ServerResponse.prototype.json = function(obj) {
@@ -44,14 +50,14 @@ http.createServer(function(req, res) {
   if (m) {
     var survey_name = m[1],
       survey = surveys[survey_name];
-    if (survey === undefined || survey.router === undefined) {
-      res.end('The ' + survey_name + ' survey cannot be found. Tell io@henrian.com');
-    }
-    else {
-      var ticket = req.cookies.get('ticket').replace(/\W/g, '');
-      User.fromTicket(ticket, function(user) {
+    if (survey) {
+      var ticket = req.cookies.get('ticket') || '';
+      models.User.fromTicket(ticket.replace(/\W/g, ''), function(user) {
         survey(req, res, m[3] || '', user);
       });
+    }
+    else {
+      res.end('The ' + survey_name + ' survey cannot be found. Tell io@henrian.com');
     }
   }
   else {
@@ -59,16 +65,3 @@ http.createServer(function(req, res) {
   }
 }).listen(port, '127.0.0.1');
 console.log('DRAGS server running at localhost:' + port);
-
-Survey.prototype.route = function(req, res) {
-  var self = this;
-  if (req.user) {
-    self.routeWithUser(req, res, req.user);
-  }
-  else {
-    req.on('user', function(user) {
-      self.routeWithUser(req, res, user);   
-    });
-  }
-});
-
