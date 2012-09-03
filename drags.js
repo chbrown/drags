@@ -1,117 +1,74 @@
-var util = require('util'),
-    fs = require('fs'),
-    path = require('path'),
-    http = require('http'),
-    mongodb = require('mongodb'),
-    amulet = require('amulet'),
-    Cookies = require('cookies'),
-    argv = require('optimist').argv,
-    wrappers = require('wrappers');
+var fs = require('fs'),
+  path = require('path'),
+  http = require('http'),
+  mongoose = require('mongoose'),
+  amulet = require('amulet'),
+  Cookies = require('cookies'),
+  wrappers = require('wrappers'),
+  argv = require('optimist').argv,
+  port = argv.port || 1301,
+  surveys = {};
 
-var CONFIG = JSON.parse(fs.readFileSync(argv.config || path.join(__dirname, 'config.json')));
-var ALPHADEC = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
-
-amulet.root(path.join(__dirname), false); // false means: don't autoparse everything in that directory
+amulet.set({minify: true, root: __dirname});
 
 Cookies.prototype.defaults = function() {
-  return { expires: new Date().addDays(31), httpOnly: false };
+  var now = new Date(),
+    expires = now.addDays(31);
+  return { expires: expires, httpOnly: false };
 };
 
-var mongo_server = new mongodb.Server(CONFIG.database.host, CONFIG.database.port, {});
-var mongo_db = new mongodb.Db(CONFIG.database.db, mongo_server);
-var mongo = new wrappers.mongo.MongoHelpers();
-mongo_db.open(function(err, client) {
-  if (err) { throw err; }
-  mongo.setClient(client);
-});
-  
-function _createUser(ip, user_agent, callback) {
-  // callback signature = (err, user_document, ticket)
-  var now = new Date();
-  mongo.insert('users', {created: now}, {}, function(err, user_docs) {
-    var ticket_key = ALPHADEC.sample(32).join('');
-    mongo.insert('tickets', {user_id: user_docs[0]._id, key: ticket_key, created: now}, {}, function(err, ticket_docs) {
-      mongo.insert('locations', {ticket_id: ticket_docs[0]._id, ip: ip, user_agent: user_agent, created: now}, {}, function() { });
-    });
-    callback(undefined, user_docs[0], ticket_key);
-  });
-}
-function _getUserFromRequest(req, res, callback) {
-  // callback signature = (err, user_document, ticket)
-  var ip = req.ip, user_agent = req.headers['user-agent'], ticket_key = req.cookies.get('ticket');
-  if (ticket_key === undefined) {
-    return _createUser(ip, user_agent, callback);
-  }
-  mongo.findFirst('tickets', {key: ticket_key}, {}, function(err, ticket_doc) {
-    // var ticket_id_result = ticket_id_results.rows[0];
-    if (ticket_doc) {
-      var ticket_id = ticket_doc._id, user_id = ticket_doc.user_id;
-      mongo.findFirst('locations', {ticket_id: ticket_id}, {sort: [['created', -1]]}, function(err, location_doc, locations_coll) {
-        // ip, user_agent aren't used unless the user has a different ip than last time
-        if (location_doc && location_doc.ip != ip) {
-          locations_coll.insert({ticket_id: ticket_id, ip: ip, user_agent: user_agent, created: new Date()});
-        }
-      });
-      mongo.findFirst('users', {_id: user_id}, {}, function(err, user_doc) {
-        callback(undefined, user_doc, ticket_key);
-      });
-    }
-    else {
-      // reassign a ticket, since that one is not in the database
-      // console.log("Creating new user because the ticket is bad:", ticket_key);
-      _createUser(ip, user_agent, callback);
-    }
-  });
-}
-
-var surveys = { };
-fs.readdirSync(path.join(__dirname, 'surveys')).forEach(function(survey_path) {
-  var Survey;
+fs.readdir(path.join(__dirname, 'surveys'), function(err, survey_path) {
   if (survey_path[0] !== '.') {
     try {
-      Survey = require(path.join(__dirname, 'surveys', survey_path)).Survey;
-      surveys[survey_path] = new Survey(_getUserFromRequest, mongo);
+      surveys[survey_path] = require(path.join(__dirname, 'surveys', survey_path));
       console.log("Loaded survey: " + survey_path);
     }
-    catch (e) {
-      console.log("Couldn't load survey: " + survey_path + ", Error:");
-      console.log(util.inspect(e, true, null));
+    catch (exc) {
+      console.error("Couldn't load survey: " + survey_path + ".");
+      console.dir(exc);
     }
   }
 });
 
-function router(req, res) {
+http.ServerResponse.prototype.json = function(obj) {
+  this.writeHead(200, {"Content-Type": "application/json"});
+  this.write(JSON.stringify(obj));
+  this.end();
+};
+http.createServer(function(req, res) {
   req.data = '';
   req.on('data', function(chunk) { req.data += chunk; });
-  req.ip = req.headers['x-real-ip'] || req.client.remoteAddress;
   req.cookies = new Cookies(req, res);
-  res.setHeader("content-type", "text/html;charset=utf-8");
 
-  var survey_name, survey,
-      m = req.url.match(/^\/([^\/]+)(\/(.*))?$/);
+  var m = req.url.match(/^\/([^\/]+)(\/(.*))?$/);
   if (m) {
-    req.url = m[3] || '';
-
-    survey_name = m[1];
-    survey = surveys[survey_name];
+    var survey_name = m[1],
+      survey = surveys[survey_name];
     if (survey === undefined || survey.router === undefined) {
       res.end('The ' + survey_name + ' survey cannot be found. Tell io@henrian.com');
     }
     else {
-      survey.router(req, res);
+      var ticket = req.cookies.get('ticket').replace(/\W/g, '');
+      User.fromTicket(ticket, function(user) {
+        survey(req, res, m[3] || '', user);
+      });
     }
   }
   else {
     wrappers.http.redirectTo(res, '/ptct/');
   }
-}
+}).listen(port, '127.0.0.1');
+console.log('DRAGS server running at localhost:' + port);
 
-http.createServer(router).listen(CONFIG.server.port, CONFIG.server.host);
-console.log('DRAGS server running at http://' + CONFIG.server.host + ':' + CONFIG.server.port + '/');
+Survey.prototype.route = function(req, res) {
+  var self = this;
+  if (req.user) {
+    self.routeWithUser(req, res, req.user);
+  }
+  else {
+    req.on('user', function(user) {
+      self.routeWithUser(req, res, user);   
+    });
+  }
+});
 
-// process.on('uncaughtException', function (err) {
-//   // // Log it! // 
-//   console.dir(err);
-//   // // Make sure you still exit. // 
-//   process.exit(1);
-// });

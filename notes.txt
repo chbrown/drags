@@ -49,3 +49,302 @@ Stimulus,A,B,C,D
 
 import csv
 [x for x in csv.DictReader(s.split('\n'))]
+
+      else if (req.url === 'admin_login') {
+        // not yet authenticated
+        wrappers.http.waitUntilComplete(req, function() {
+          var payload = JSON.parseWithDefault(req.data, {});
+          if (state.label === 'admin_login' && payload.su_name === su_name && payload.su_pass === su_pass) {
+            state.label = 'admin_results';
+            survey.mongo.openCollection('users', function(err, user_collection) {
+              user.superuser = true;
+              user_collection.save(user);
+              survey.prepare(req, res, state, true, false);
+            });
+          }
+          else {
+            state.label = 'admin_login';
+            survey.prepare(req, res, state, true, true);
+          }
+        });
+      }
+      else {
+        state.label = 'admin_login';
+        survey.prepare(req, res, state, true, true);
+      }
+
+
+    else if (req.url.match(/^admin/)) {
+      // console.log("user.superuser", user.superuser);
+      if (user.superuser === true) {
+        var m;
+        if (m = req.url.match(/admin_results\/(\w{24})/)) {
+          var user_id = BSON.ObjectID(m[1]);
+          return survey.mongo.findAll('ptct_responses', {user_id: user_id}, {}, function(err, response_documents) {
+            var headers = 'stimulus_id,value,time_since_choices_shown,correct'.split(',');
+            
+            res.writeHead(200, {"Content-Type": "text/csv"}); // application/octet-stream
+            var csv_writer = csv().toStream(res);
+            csv_writer.write(headers);
+
+            response_documents.forEach(function(d) {
+              var time = (d.time_choice_selected && d.time_choices_shown) ? 
+                (d.time_choice_selected - d.time_choices_shown) : 'NA';
+              var correct = (survey.ptct_stimuli_by_id[d.stimulus_id] || {correct: 'NA'}).correct.toUpperCase();
+              csv_writer.write([d.stimulus_id, d.value, time, correct]);
+            });
+            // console.log(rows);
+
+            csv_writer.end();
+          });
+        }
+        else if (req.url.match(/admin_results\/all/)) {
+          var demo_keys = [
+            "administrator_code",
+            "age_of_first_and_continued_exposure_to_asl",
+            "age_of_first_and_continued_exposure_to_asl_unknown",
+            "child_code",
+            "deaf_signers_in_home",
+            "diagnoses",
+            "diagnoses_other_cognitive",
+            "diagnoses_other_language",
+            "dob",
+            "hearing",
+            "language_used_in_home",
+            "sex",
+            "todays_date"
+          ], stim_keys = [
+            "stimulus_id",
+            "time_since_choices_shown",
+            "time_choices_shown",
+            "time_stimulus_completed",
+            "time_choice_selected",
+            "created",
+            "user_id",
+            "value",
+            "correct"
+          ];
+          var all_keys = stim_keys.concat(demo_keys);
+          
+          if (req.url.match(/csv$/)) {
+            var filename = 'drags_total_' + (new Date()).format('isoDate')  + '.csv';
+            res.setHeader('Content-Disposition', 'attachment; filename="' + filename + '"')
+            res.writeHead(200, {"Content-Type": "text/csv"});
+          }
+          else {
+            res.writeHead(200, {"Content-Type": "text/plain"});
+          }
+
+          // var csv_writer = csv().toStream(res);
+          // csv_writer.write(all_keys);
+          res.write(csvRow(all_keys))
+          
+          console.time('render-csv-all');
+          survey.mongo.findAll('users', {active: true}, {}, function(err, user_docs) { // query for users
+            var countdown = wrappers.countdown(user_docs.length, function() {
+              console.timeEnd('render-csv-all');
+              res.end();
+            });
+
+            user_docs.forEach(function(user_doc) { // for each user
+              survey.mongo.findAll('ptct_responses', {user_id: user_doc._id},
+                {sort: [['stimulus_id', 1]]}, function(err, response_documents) { // query for responses
+
+                var demographics = {}, responses = [];
+                response_documents.forEach(function(d) { // for each response
+                  if (demo_keys.indexOf(d.stimulus_id) !== -1)
+                    demographics[d.stimulus_id] = d.value;
+                  else {
+                    responses.push(d);
+                  }
+                });
+                // write to csv:
+                responses.forEach(function(d) {
+                  d.time_since_choices_shown = (d.time_choice_selected && d.time_choices_shown) ?
+                      (d.time_choice_selected - d.time_choices_shown) : '';
+                  d.correct = (survey.ptct_stimuli_by_id[d.stimulus_id] || {correct: ''}).correct.toUpperCase();
+
+                  var demo_values = demo_keys.map(function(demo_key) {
+                    return (demographics[demo_key] === undefined) ? '' : demographics[demo_key];
+                  });
+                  var stim_values = stim_keys.map(function(stim_key) {
+                    if (d[stim_key] === undefined || d[stim_key] === null) {
+                      return '';
+                    }
+                    else {
+                      if (stim_key.match(/time_choices_shown|time_stimulus_completed|time_choice_selected/) && !isNaN(d[stim_key])) {
+                        return (new Date(d[stim_key])).format('strictLong');
+                      }
+                      else {
+                        return d[stim_key].toString();
+                      }
+                    }
+                  });
+                  var all_values = stim_values.concat(demo_values);
+                  res.write(csvRow(all_values));
+                });
+
+                countdown();
+              });
+            });
+
+          });
+        }
+        else { // if (req.url === 'admin_login' || req.url === 'admin_results') {
+          state.label = 'admin_results';
+          survey.prepare(req, res, state, true, true);
+        }
+      }
+
+    }
+
+var su_name = 'dqp', su_pass = 'LUam6R4v368UAR';
+
+
+    if (state.label === 'admin_results') {
+      var limit = 500;
+      return survey.mongo.findAll('ptct_responses', {}, {sort: [['created', -1]], limit: limit}, function(err, documents) {
+        documents.forEach(function(d) {
+          d.time_since_choices_shown = (d.time_choice_selected && d.time_choices_shown) ? 
+            (d.time_choice_selected - d.time_choices_shown) : 'NA';
+        });
+        context = {responses: documents, truncated: ''};
+        if (documents.length >= limit) {
+          context.truncated = 'Most recent responses. Truncated to ' + limit + ' responses.';
+        }
+      
+        survey.render(res, state, full);
+      });
+    }
+
+
+    // initializations:
+    // console.log(state); // why do I need to check for nulls and empty strings!?
+    // if (state.label === undefined || state.label === null || state.label === '') {
+    //   state.label = 'title';
+    //   state_changed = true;
+    // }
+    // if (state.index === undefined || state.index === null || state.index === '') {
+    //   state.index = '0'; // for some reason, needs to be string. I understand, I guess. Fix in Cookies?
+    //   state_changed = true;
+    // }
+    // if (state.version === undefined || state.version === null || state.version === '') {
+    //   state.version = ['a', 'b'][Math.round(Math.random())];
+    //   state_changed = true;
+    // }
+    
+      // to get from title to demographics, you gotta put in a password
+      //   this is a very hackishly hard-coded finite state machine
+      // if (state.label == 'demographics') {
+        // state.label = 'instructions';
+      // }
+      // else if (state.label == 'instructions') {
+        // state.label = 'show_video';
+      // }
+      // else if (state.label == 'show_video') { // this might be merged out.
+        // state.label = 'show_choices';
+      // }
+      // else if (state.label == 'show_choices') {
+        // state.index++;
+        // if (state.index >= survey.ptct_stimuli_sets[state.version].length) {
+          // state.label = 'conclusion';
+        // }
+        // else {
+          // state.label = 'show_video';
+        // }
+      // }
+      // else if (state.label == 'admin_login' || state.label == 'admin_results') {
+        // state.label = 'title';
+      // }
+      
+      // fork off to submit payload. (are they always responses?)
+
+        for (var key in response) {
+          if (key.match(/^time/)) {
+            response[key] = parseInt(response[key], 10);
+          }
+        }
+
+
+
+
+
+{{truncated}}
+
+<div class="download-csv">
+  <a id="download_csv" href="/ptct/admin_results/all.csv"><img src="/images/page_excel.png" /> Download CSV</a>
+  <span id="download_wait" style="display: none">Please wait while your CSV report is generated.</span>
+</div>
+
+<table>
+  <tr>
+    <th>user_id,</th>
+    <th>stimulus_id,</th>
+    <th>value,</th>
+    <th>time_since_choices_shown,</th>
+    <th>created</th>
+  </tr>
+  {{#responses}}
+  <tr>
+    <td><a href="admin_results/{{user_id}}">{{user_id}}</a>,</td>
+    <td>{{stimulus_id}},</td>
+    <td>{{value}},</td>
+    <td>{{time_since_choices_shown}},</td>
+    <td class="nowrap">{{created.format("strictLong")}}</td>
+  </tr>
+  {{/}}
+</table>
+
+<style>
+  #container { 
+    width: auto !important;
+  }
+</style>
+<script>
+  $('#download_csv').click(function(el) {
+    $('#download_csv').fadeOut(100);
+    $('#download_wait').fadeIn(100);
+    setTimeout(function() {
+      $('#download_wait').fadeOut(100);
+      $('#download_csv').fadeIn(100);
+    }, 5000);
+    return true;
+  });
+</script>
+
+<h2>Superuser login</h2>
+
+<div id="form" style="margin-top: 50px">
+  <div id="su_name">
+    <label>Username</label>
+    <input type="text" />
+  </div>
+  <div id="su_pass">
+    <label>Password</label>
+    <input type="password" />
+  </div>
+</div>
+
+<div style="margin: 10px 0;">
+  <input type="button" id="submit" value="Login" />
+</div>
+
+<div style="margin: 40px 0;">
+  <a href="javascript:next()">Back to the main page</a>
+  <a href="/ptct/reset">Reset</a>
+</div>
+
+<script>
+  function submit() {
+    var response = $('#form').objectifyForm();
+    console.log(response);
+    window.data = response;
+    next('admin_login');
+  }
+  $('#form').bind('keypress', function(e) {
+    if (e.keyCode==13){
+      submit();
+    }
+  });
+  $('#submit').one('click', submit);
+</script>
