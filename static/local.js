@@ -1,55 +1,11 @@
 if (typeof console === "undefined" || typeof console.log === "undefined") {
   // just swallow any logs, if there aren't any dev tools available.
-  console = {};
-  console.log = function() { };
+  console = {log: function() {}};
 }
 
-// Cookie plugin Copyright (c) 2006 Klaus Hartl (stilbuero.de)
-// Dual licensed under the MIT and GPL licenses.
-// Some modifications by Christopher Brown <io@henrian.com>
-var cookie_defaults = {};
-function Cookie() {}
-Cookie.set = function(name, value, options) {
-  // name and value given, set cookie
-  options = options || cookie_defaults;
-  if (value === null) {
-    value = '';
-    options.expires = -1;
-  }
-  var expires = '';
-  if (options.expires && (typeof options.expires == 'number' || options.expires.toUTCString)) {
-    var date;
-    if (typeof options.expires == 'number') {
-      date = new Date();
-      date.setTime(date.getTime() + (options.expires * 24 * 60 * 60 * 1000));
-    } else {
-      date = options.expires;
-    }
-    expires = '; expires=' + date.toUTCString(); // use expires attribute, max-age is not supported by IE
-  }
-  var path = options.path ? ('; path=' + options.path) : '';
-  var domain = options.domain ? ('; domain=' + options.domain) : '';
-  var secure = options.secure ? '; secure' : '';
-  document.cookie = [name, '=', encodeURIComponent(value), expires, path, domain, secure].join('');
-};
-Cookie.get = function(name, options) {
-  var cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    var cookies = document.cookie.split(';');
-    for (var i = 0; i < cookies.length; i++) {
-      var cookie = jQuery.trim(cookies[i]);
-      // Does this cookie string begin with the name we want?
-      if (cookie.substring(0, name.length + 1) == (name + '=')) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
-    }
-  }
-  return cookieValue;
-};
-
 // local setup
-cookie_defaults = {expires: 31, path: '/'};
+function timestamp() { return (new Date()).getTime(); }
+$.defaultCookie = {expires: new Date(timestamp() + 31*86400000), path: '/'};
 $.ajaxSetup({
   type: 'POST',
   dataType: 'json',
@@ -58,7 +14,7 @@ $.ajaxSetup({
   processData: false
 });
 
-function timestamp() { return (new Date()).getTime(); }
+
 
 function Preloader(urls, $buffer, debug) {
   // urls will be a list of strings
@@ -71,11 +27,11 @@ function Preloader(urls, $buffer, debug) {
     this.debug = debug;
   else if (typeof Cookie !== 'undefined' && Cookie.get('debug') === 'true')
     this.debug = true;
-  
+
   //this.cache = {}; // keyed by url. The value is null while being loaded, and the element when completed.
   // this.callbacks = {}; // keyed by url, lists of callbacks for when a particular movie is done.
   this.progresses = {}; // keyed by url, jQuery elements | undefined
-  
+
   this.queue = urls.slice(0);
   this.currently_loading_url = undefined;
   this.paused = true;
@@ -194,13 +150,13 @@ Preloader.prototype.getMedia = function(url, rush, callback) {
     for (var j = calls - 1; j >= calls - 10 && j >= 0; j--) {
       last_10_diff += buffer_diffs[j];
     }
-    
+
     var $progress = preloader.progresses[url];
     if ($progress && $progress.length) {
       $progress.html('<div class="progress-bar">' +
         '<div style="width: ' + ((isNaN(done) ? 0 : done) * 100).toFixed(0) + '%;">&nbsp;</div></div>');
     }
-    
+
     if (done > 0.99) {
       return preloader._gotMedia(media, callback); // normal completion
     }
@@ -258,7 +214,7 @@ $.fn.objectifyForm = function() {
     var $field = $(this),
         value = [],
         force_list = false;
-    
+
     $field.find("input[type='text']").each(function(i, el) {
       value.push(el.value);
     });

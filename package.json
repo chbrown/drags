@@ -1,6 +1,6 @@
 {
   "name": "drags",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author" : "Christopher Brown <io@henrian.com>",
   "main" : "drags.js",
   "description": "Digital Research-Assistant Graduate Student",
@@ -12,11 +12,13 @@
   },
   "dependencies" : {
     "amulet": "*",
+    "async": "*",
     "cookies": "git://github.com/chbrown/cookies.git",
-    "wrappers": "git://github.com/chbrown/wrappers.git",
-    "regex-router": "*",
-    "mongoose": "*",
     "csv": "*",
-    "optimist": "*"
+    "fsm": "git://github.com/chbrown/fsm.git",
+    "mongoose": "*",
+    "optimist": "*",
+    "regex-router": "*",
+    "winston": "*"
   }
 }
