@@ -22,7 +22,12 @@ var userSchema = new mongoose.Schema({
       return [random_ticket];
     }
   },
-  responses: []
+  responses: [
+    /* e.g., {
+      stimulus_id: 'language_used_in_home',
+      ...
+    } */
+  ]
 });
 
 userSchema.methods.activeTicket = function() {

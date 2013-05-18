@@ -40,11 +40,12 @@ a:hover{color:#2b578a;}
 table.stimuli{width:90%;margin:10px auto 20px auto;}table.stimuli td{text-align:center;vertical-align:middle;width:33%;}
 table.stimuli td.control{font-size:110%;}
 table.stimuli_choice{margin:0 auto;}table.stimuli_choice td{font-size:110%;text-align:left;padding:3px;width:auto;}
+#stage{text-align:center;}
 .progress-bar{border:1px solid black;height:10px;width:100%;}.progress-bar div{background-color:black;height:10px;}
 table.choices{text-align:center;}table.choices img{width:160px;height:160px;}
-table.choices button{font-size:110%;padding:3px 30px;}
+table.choices button{font-size:110%;padding:3px 30px;text-transform:capitalize;}
 input[type=text],input[type=password]{margin:2px 0 8px;display:block;}
-#form >div[id]{margin:15px 0;}
+#form>div[id]{margin:15px 0;}
 #form label{display:block;font-weight:bold;}#form label input[type=radio],#form label input[type=checkbox]{margin:4px 2px 5px 2px;}
 .flag{position:absolute;background-color:black;border-radius:4px;padding:3px;color:white;}.flag .triangle{display:inline-block;position:absolute;border:6px solid transparent;width:0;height:0;}
 .flag .subflag{display:inline-block;}.flag .subflag span,.flag .subflag a{display:inline-block;padding:0 4px;}

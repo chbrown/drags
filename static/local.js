@@ -38,11 +38,11 @@ $.ajaxSetup({
 
 
 $.fn.objectifyForm = function() {
-  var store = {};
+  var form = {};
   this.children('div[id]').each(function() {
-    var $field = $(this),
-        value = [],
-        force_list = false;
+    var $field = $(this);
+    var value = [];
+    var force_list = false;
 
     $field.find('input[type="text"]').each(function(i, el) {
       value.push(el.value);
@@ -56,10 +56,10 @@ $.fn.objectifyForm = function() {
 
     // for each checkbox/radiobutton get the id, find the label[for=<that-id>].innerText, use that as value
     $field.find('input[type="checkbox"]:checked').each(function(i, el) {
-      value.push($field.find('label[for="' + el.id + '"]').text());
+      value.push($(el).parent('label').text().trim());
     });
     $field.find('input[type="radio"]:checked').each(function(i, el) {
-      value.push($field.find('label[for="' + el.id + '"]').text());
+      value.push($(el).parent('label').text().trim());
     });
 
     if (value.length === 0) {
@@ -69,7 +69,7 @@ $.fn.objectifyForm = function() {
       value = value[0];
     }
 
-    store[this.id] = value;
+    form[this.id] = value;
   });
-  return store;
+  return form;
 };

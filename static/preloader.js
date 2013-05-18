@@ -22,6 +22,7 @@ var Resource = Backbone.Model.extend({
     this.id = url.replace(/\W/g, '');
     this.type = Resource.inferType(url);
     this.$element = null;
+    self.complete = false;
   },
   abort: function() {
     if (this.$element) {
@@ -36,47 +37,53 @@ var Resource = Backbone.Model.extend({
       this.$element = null;
     }
   },
-  insert: function($container, callback) {
-    // callback signature: function(err, element)
+  insert: function($container, rush) {
     // triggers events: ('progress', 0 <= ratio <= 1)
     //                  ('done')
     var self = this;
     var html = Handlebars.templates[this.type + '.mu']({url: this.url, id: this.id});
-    // attach the element so we can detach it later in abort
+
+    // attach the element so we can detach it later in abort if needed
     this.$element = $(html).appendTo($container);
     var media = this.$element[0];
     var started = timestamp();
 
     var done = function(err) {
-      self.index++;
-      callback(err, self.$element);
+      if (!err) {
+        self.complete = true;
+        self.trigger('done');
+      }
+      // callback signature: function(err, element)
+      // if (callback) {
+      //   callback(err, self.$element);
+      // }
     };
 
     // begin monitoring process, setting up a loop with varying timeouts
     var buffered_record = [];
     (function watch() {
-      if (!this.$element) {
-        return callback({type: 'ElementError', message: 'Resource aborted, element removed.'});
+      if (!self.$element) {
+        return done({type: 'ElementError', message: 'Resource aborted, element removed.'});
       }
       if (!media) {
-        return callback({type: 'MediaError', message: 'Media cannot be found for the url: ' + self.url});
+        return done({type: 'MediaError', message: 'Media cannot be found for the url: ' + self.url});
       }
 
       var buffered_length = (media.buffered && media.buffered.length > 0) ? media.buffered.end(0) : 0;
       buffered_record.push(buffered_length);
 
-      var complete = buffered_length / media.duration;
+      var completed = buffered_length / media.duration;
       var elapsed = timestamp() - started;
-      self.trigger('progress', complete);
+      self.trigger('progress', completed);
 
       var last_10_diff = _.chain(buffered_record).last(10).diffs().reduce(add, 0).value();
 
-      if (complete > 0.99) {
+      if (completed > 0.99) {
         // close enough, normal completion
         done();
       }
-      else if (rush === true) {
-        if (elapsed > 10 && last_10_diff < 1 && complete > 0.5) {
+      else if (rush) {
+        if (elapsed > Preloader.timeouts.rush && last_10_diff < 1 && completed > 0.5) {
           // sometimes Chrome doesn't feel like loading the whole movie. Okay, fine.
           done();
         }
@@ -84,9 +91,9 @@ var Resource = Backbone.Model.extend({
           setTimeout(watch, 250);
         }
       }
-      else if (elapsed > Preloader.timeouts.zero && last_10_diff < 1 && complete > 0.5) {
+      else if (elapsed > Preloader.timeouts.zero && last_10_diff < 1 && completed > 0.5) {
         // it seems that Chrome isn't ever going to preload the whole media
-        return preloader._gotMedia(media, callback);
+        done();
       }
       else if (elapsed > Preloader.timeouts.slow && buffered_length === 0) {
         // logger.info('The media cannot be found or loaded.', url, media);
@@ -103,6 +110,10 @@ var Resource = Backbone.Model.extend({
         setTimeout(watch, 250);
       }
     })();
+  },
+  wait: function(callback) {
+    // callback signature: function(err)
+    this.on('done', callback);
   }
 }, {
   inferType: function(url) {
@@ -120,7 +131,7 @@ var Resource = Backbone.Model.extend({
 
 
 var Preloader = Backbone.Model.extend({
-  initialize: function(urls) {
+  initialize: function(urls, $container) {
     logger.debug('Preloader.initialize urls=', urls);
     // urls will be a list of strings
     // each url, on loading, will be stuck in the dom, in a hidden div.
@@ -129,7 +140,7 @@ var Preloader = Backbone.Model.extend({
     this.index = 0;
 
     // create new container at the end of the document to hold the elements.
-    this.$container = $('<div style="display: none"></div>').appendTo(document.body);
+    this.$container = $container || $('<div style="display: none"></div>').appendTo(document.body);
 
     //this.cache = {}; // keyed by url. The value is null while being loaded, and the element when completed.
     //this.callbacks = {}; // keyed by url, lists of callbacks for when a particular movie is done.
@@ -156,20 +167,38 @@ var Preloader = Backbone.Model.extend({
     this.run();
   },
   run: function() {
-    logger.debug('Preloader.run; pause=', this.paused);
     var self = this;
     var resource = this.resources[this.index];
+    logger.debug('Preloader.run; pause=', this.paused, 'index=', this.index);
     if (!this.paused && resource) {
-      logger.debug('Preloader.run index=', this.index, 'url=', resource.url);
-      resource.load(this.$container);
-      resource.once(run, this);
+      logger.debug('Preloader.run; url=', resource.url);
+      resource.insert(this.$container);
+      // resource.on('progress' );
+      resource.wait(function(err) {
+        self.index++;
+        self.run();
+      });
     }
     else {
       logger.debug('Preloader.run: no more resources');
     }
+  },
+  load: function(url, callback) {
+    // callback signature: function(err, $element)
+    var resource = _.find(this.resources, function(resource) {
+      return resource.url == url;
+    }) || new Resource(url);
+
+    console.log('waiting', url, resource);
+    if (!resource.$element) {
+      resource.insert(this.$container, true);
+    }
+
+    resource.wait(function(err) {
+      callback(err, resource.$element);
+    });
   }
   // $fromUrl: function(url, make_if_missing) {
-  //   var $element = $('#' + url.replace(/\W/g, ''));
   //   if (!$element.length && make_if_missing === true) {
   //     get type
   //
@@ -179,9 +208,7 @@ var Preloader = Backbone.Model.extend({
   // getMedia: function(url, rush, callback) {
   //   // async, callback signature: function(err, element)
   //   // logger.debug('Preloader.getMedia. url:', url, 'rush:', rush);
-  //   // var preloader = this;
   //   // var media = this.$fromUrl(url, true)[0];
-  //   this.currently_loading_url = url;
 
   //   // quick exit for the simple image case
   //   if (url.match(/\.jpg/)) {
@@ -195,6 +222,7 @@ var Preloader = Backbone.Model.extend({
 }, {
   timeouts: {
     // in seconds
+    rush: 2000,
     zero: 5000,
     slow: 20000,
     hard: 50000

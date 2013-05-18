@@ -3,6 +3,7 @@ var __ = require('underscore');
 var fs = require('fs');
 var os = require('os');
 var path = require('path');
+var util = require('util');
 var Cookies = require('cookies');
 var Router = require('regex-router');
 var amulet = require('amulet');
@@ -135,7 +136,7 @@ if (cluster.isMaster) {
     cluster.fork();
   }
   cluster.on('disconnect', function(worker) {
-    logger.error('Worker (' + worker + ') died. Restarting.');
+    logger.error('Worker (' + util.inspect(worker) + ') died. Restarting.');
     cluster.fork();
   });
 } else {
