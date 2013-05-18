@@ -1,3 +1,4 @@
+'use strict'; /*jslint nomen: true, node: true, indent: 2, debug: true, vars: true, es5: true */
 var winston = require('winston');
 
 var logger = module.exports = new winston.Logger({
@@ -6,4 +7,8 @@ var logger = module.exports = new winston.Logger({
     new (winston.transports.File)({filename: '/usr/local/var/log/drags.log'})
   ]
 });
-logger.maybe = function (err) { if (err) logger.error(err); };
+
+// `maybe` only logs truthy errors
+logger.maybe = function (err) {
+  if (err) logger.error(err);
+};

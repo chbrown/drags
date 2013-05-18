@@ -1,0 +1,1 @@
+<img id="{{id}}" style="display: none" src="{{url}}" />

@@ -1,4 +1,5 @@
 'use strict'; /*jslint nomen: true, node: true, indent: 2, debug: true, vars: true, es5: true */
+var __ = require('underscore');
 var mongoose = require('mongoose');
 mongoose.connect('localhost', 'drags');
 
@@ -17,11 +18,17 @@ var userSchema = new mongoose.Schema({
   tickets: {
     type: [String],
     'default': function() {
-      return [alphaDecimal(32)];
+      var random_ticket = alphaDecimal(32);
+      return [random_ticket];
     }
   },
   responses: []
 });
+
+userSchema.methods.activeTicket = function() {
+  // return the last ticket
+  return this.tickets[this.tickets.length - 1];
+};
 
 userSchema.statics.fromTicket = function(ticket, callback) {
   // callback signature: (err, user)

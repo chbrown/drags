@@ -1,0 +1,1 @@
+<div class="progress-bar"><div style="width: {{width}}%;">&nbsp;</div></div>

@@ -2,6 +2,11 @@
 var http = require('http');
 var util = require('util');
 
+http.IncomingMessage.prototype.wait = function(callback) {
+  if (this.complete) setImmediate(callback);
+  else this.on('end', callback);
+};
+
 http.ServerResponse.prototype.writeEnd = function(s) { this.write(s); this.end(); };
 http.ServerResponse.prototype.writeAll = function(http_code, content_type, body) {
   this.writeHead(http_code, {'Content-Type': content_type});

@@ -19,6 +19,12 @@
     "mongoose": "*",
     "optimist": "*",
     "regex-router": "*",
-    "winston": "*"
+    "underscore": "*",
+    "winston": "0.6.*"
+  },
+  "devDependencies": {
+    "grunt": "*",
+    "grunt-contrib-uglify": "*",
+    "grunt-contrib-handlebars": "git://github.com/chbrown/grunt-contrib-handlebars.git"
   }
 }

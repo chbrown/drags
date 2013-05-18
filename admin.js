@@ -1,12 +1,16 @@
+'use strict'; /*jslint nomen: true, node: true, indent: 2, debug: true, vars: true, es5: true */
+var __ = require('underscore');
 var fs = require('fs');
 var path = require('path');
 var http = require('http');
-var models = require('./models');
-var amulet = require('amulet');
 var winston = require('winston');
-var Cookies = require('cookies');
+var amulet = require('amulet');
+// var Cookies = require('cookies');
 var Router = require('regex-router');
 var csv = require('csv');
+
+
+var models = require('./models');
 
 function contains(haystack, needle) {
   return haystack.indexOf(needle) > -1;
@@ -48,9 +52,13 @@ var time_fields = [
 var design = {};
 ['ptct-a', 'ptct-b', 'ptct-c'].forEach(function(survey_name) {
   var design_csv_path = path.join(__dirname, 'surveys', survey_name, 'design.csv');
-  csv().from.path(design_csv_path, {columns: true}).on('data', function(row, index) {
-    // some row might be 'a10','Question 8','wi-c1','c-wi0','c-wo135','wo-c270','wi-c225','d'
-    design[row.id] = row;
+  fs.exists(design_csv_path, function (exists) {
+    if (exists) {
+      csv().from.path(design_csv_path, {columns: true}).on('data', function(row, index) {
+        // some row might be 'a10','Question 8','wi-c1','c-wi0','c-wo135','wo-c270','wi-c225','d'
+        design[row.id] = row;
+      });
+    }
   });
 });
 
