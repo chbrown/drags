@@ -113,7 +113,12 @@ var Resource = Backbone.Model.extend({
   },
   wait: function(callback) {
     // callback signature: function(err)
-    this.on('done', callback);
+    if (this.complete) {
+      callback();
+    }
+    else {
+      this.on('done', callback);
+    }
   }
 }, {
   inferType: function(url) {
@@ -132,7 +137,7 @@ var Resource = Backbone.Model.extend({
 
 var Preloader = Backbone.Model.extend({
   initialize: function(urls, $container) {
-    logger.debug('Preloader.initialize urls=', urls);
+    logger.debug('Preloader.initialize: urls=', urls);
     // urls will be a list of strings
     // each url, on loading, will be stuck in the dom, in a hidden div.
     // keyed by their santized urls as element ids, i.e. url.replace(/\W/g, '')
@@ -149,8 +154,12 @@ var Preloader = Backbone.Model.extend({
     // we can pause
     this.paused = true;
   },
+  setContainer: function($container) {
+    $container.append(this.$container.children());
+    this.$container = $container;
+  },
   pause: function(abort) {
-    logger.debug('Preloader.pause');
+    logger.debug('Preloader.pause: abort=', abort);
     // call with (true) to stop the current loader ASAP
     this.paused = true;
 
@@ -160,36 +169,47 @@ var Preloader = Backbone.Model.extend({
     if (abort && resource) {
       resource.abort();
     }
+    return this;
   },
   resume: function() {
-    logger.debug('Preloader.resume; pause=', this.paused);
+    logger.debug('Preloader.resume: pause was', this.paused);
     this.paused = false;
     this.run();
+    return this;
   },
   run: function() {
+    // this can be called multiple times without ill effect
     var self = this;
     var resource = this.resources[this.index];
-    logger.debug('Preloader.run; pause=', this.paused, 'index=', this.index);
-    if (!this.paused && resource) {
-      logger.debug('Preloader.run; url=', resource.url);
-      resource.insert(this.$container);
-      // resource.on('progress' );
-      resource.wait(function(err) {
-        self.index++;
-        self.run();
-      });
+    logger.debug('Preloader.run: index=', this.index);
+    if (this.paused) {
+      logger.debug('Preloader.run: paused');
+    }
+    else if (resource) {
+      if (resource.$element) {
+        logger.debug('Preloader.run: url=', resource.url, 'in-progress', resource);
+      }
+      else {
+        resource.insert(this.$container);
+        resource.wait(function(err) {
+          self.index++;
+          self.run();
+        });
+        logger.debug('Preloader.run: url=', resource.url, 'inserted', resource);
+      }
     }
     else {
       logger.debug('Preloader.run: no more resources');
     }
+    return this;
   },
   load: function(url, callback) {
     // callback signature: function(err, $element)
+    logger.debug('Preloader.load: url=', url);
     var resource = _.find(this.resources, function(resource) {
       return resource.url == url;
     }) || new Resource(url);
 
-    console.log('waiting', url, resource);
     if (!resource.$element) {
       resource.insert(this.$container, true);
     }
@@ -197,28 +217,8 @@ var Preloader = Backbone.Model.extend({
     resource.wait(function(err) {
       callback(err, resource.$element);
     });
+    return resource;
   }
-  // $fromUrl: function(url, make_if_missing) {
-  //   if (!$element.length && make_if_missing === true) {
-  //     get type
-  //
-  //   }
-  //   return $element;
-  // },
-  // getMedia: function(url, rush, callback) {
-  //   // async, callback signature: function(err, element)
-  //   // logger.debug('Preloader.getMedia. url:', url, 'rush:', rush);
-  //   // var media = this.$fromUrl(url, true)[0];
-
-  //   // quick exit for the simple image case
-  //   if (url.match(/\.jpg/)) {
-  //     this.trigger('gotMedia', media);
-  //     setTimeout(function() {
-  //       preloader._gotMedia(media, callback);
-  //     }, 0);
-  //     return;
-  //   }
-  // }
 }, {
   timeouts: {
     // in seconds

@@ -5,7 +5,7 @@ module.exports = function(grunt) {
     pkg: grunt.file.readJSON('package.json'),
     handlebars: {
       all: {
-        src: 'static/templates',
+        src: 'templates',
         ext: 'mu',
         dest: 'static/templates.js'
       }
@@ -14,17 +14,16 @@ module.exports = function(grunt) {
       all: {
         options: {
           mangle: false
-          // beautify: true
         },
         files: {
           'static/compiled.js': [
-            'static/lib/js/json2.js',
-            'static/lib/js/underscore.js',
-            'static/lib/js/jquery.js',
-            'static/lib/js/backbone.js',
-            'static/lib/js/jquery.flags.js',
-            'static/lib/js/jquery.cookie.js',
-            'static/lib/js/handlebars.runtime.js',
+            'static/lib/json2.js',
+            'static/lib/underscore.js',
+            'static/lib/jquery.js',
+            'static/lib/backbone.js',
+            'static/lib/jquery.flags.js',
+            'static/lib/jquery.cookie.js',
+            'static/lib/handlebars.runtime.js',
             // 'static/local.js',
           ]
         }

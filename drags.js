@@ -11,7 +11,7 @@ var amulet = require('amulet');
 var cluster = require('cluster');
 var domain = require('domain');
 
-var http = require('./http-enhanced');
+var http = require('http-enhanced');
 var models = require('./models');
 var logger = require('./logger');
 
@@ -86,7 +86,6 @@ function work() {
   var server = http.createServer(function(req, res) {
     var started = Date.now();
     res.end = function() {
-      // console.log('duration', {url: req.url, method: req.method, ms: Date.now() - started});
       logger.info('duration', {url: req.url, method: req.method, ms: Date.now() - started});
       http.ServerResponse.prototype.end.apply(res, arguments);
     };
@@ -132,7 +131,6 @@ function work() {
 if (cluster.isMaster) {
   var forks = Math.min(os.cpus().length, argv.maxcores);
   for (var i = 0; i < forks; i++) {
-    // console.log("Forking");
     cluster.fork();
   }
   cluster.on('disconnect', function(worker) {

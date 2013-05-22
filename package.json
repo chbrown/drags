@@ -16,6 +16,7 @@
     "cookies": "git://github.com/chbrown/cookies.git",
     "csv": "*",
     "fsm": "git://github.com/chbrown/fsm.git",
+    "http-enhanced": "*",
     "mongoose": "*",
     "optimist": "*",
     "regex-router": "*",
@@ -34,6 +35,7 @@
     "jquery": "*",
     "backbone": "*",
     "handlebars": "*",
+    "normalize": "*",
     "jquery-plugins": "git://github.com/chbrown/jquery-plugins.git"
   }
 }
