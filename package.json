@@ -1,16 +1,16 @@
 {
   "name": "drags",
   "version": "0.2.1",
-  "author" : "Christopher Brown <io@henrian.com>",
-  "main" : "drags.js",
+  "author": "Christopher Brown <io@henrian.com>",
+  "main": "drags.js",
   "description": "Digital Research-Assistant Graduate Student",
-  "keywords" : ["drags", "surveys"],
+  "keywords": ["drags", "surveys"],
   "homepage": "https://github.com/chbrown/drags",
-  "repository" : {
-    "type" : "git",
-    "url" : "git://github.com/chbrown/drags.git"
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/chbrown/drags.git"
   },
-  "dependencies" : {
+  "dependencies": {
     "amulet": "*",
     "async": "*",
     "cookies": "git://github.com/chbrown/cookies.git",
