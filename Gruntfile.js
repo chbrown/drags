@@ -5,8 +5,7 @@ module.exports = function(grunt) {
     pkg: grunt.file.readJSON('package.json'),
     handlebars: {
       all: {
-        src: 'templates',
-        ext: 'mu',
+        glob: 'templates/*.mu',
         dest: 'static/templates.js'
       }
     },
