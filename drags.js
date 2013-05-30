@@ -15,12 +15,15 @@ var logger = require('./logger');
 var Router = require('regex-router');
 
 var argv = require('optimist').default({
-  port: 1301,
-  hostname: '127.0.0.1',
-  'default': '/ptct-video',
   maxcores: 16,
+  hostname: '127.0.0.1',
+  port: 1301,
+  'default': '/ptct-video',
+  database: 'drags',
   surveys_path: path.join(__dirname, 'surveys'),
 }).argv;
+
+models.connect(argv.database);
 
 // root() simply adds some data gatherers, loggers, gets the current user and
 //   forwards on the request to the regex-router, R.

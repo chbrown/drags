@@ -1,7 +1,9 @@
 'use strict'; /*jslint node: true, es5: true, indent: 2 */
-var __ = require('underscore');
 var mongoose = require('mongoose');
-mongoose.connect('localhost', 'drags');
+
+exports.connect  = function(database) {
+  mongoose.connect('localhost', database);
+};
 
 function alphaDecimal(length) {
   var store = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split(''), string = '';
