@@ -21,7 +21,7 @@
     "optimist": "*",
     "regex-router": "*",
     "underscore": "*",
-    "winston": "0.6.*"
+    "winston": "0.6.x"
   },
   "devDependencies": {
     "grunt": "*",
