@@ -1,12 +1,4 @@
 .DS_Store
-.bundle/
-bin/
-*.pyc
-backups/
 node_modules/
-npm-debug.log
-log/
 surveys/
 surveys.disabled/
-supervise/
-
