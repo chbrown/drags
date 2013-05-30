@@ -1,119 +1,100 @@
-'use strict'; /*jslint nomen: true, node: true, indent: 2, debug: true, vars: true, es5: true */
-var __ = require('underscore');
+'use strict'; /*jslint node: true, es5: true, indent: 2 */
+var _ = require('underscore');
 var fs = require('fs');
 var path = require('path');
 var http = require('http');
-var winston = require('winston');
 var amulet = require('amulet');
-// var Cookies = require('cookies');
 var Router = require('regex-router');
-var csv = require('csv');
-
-
+var sv = require('sv');
+// var Cookies = require('cookies');
+var logger = require('./logger');
 var models = require('./models');
 
-function contains(haystack, needle) {
-  return haystack.indexOf(needle) > -1;
-}
+// var zz_design = {};
+// ['ptct-a', 'ptct-b', 'ptct-c'].forEach(function(survey_name) {
+//   var design_csv_path = path.join(__dirname, 'surveys', survey_name, 'design.csv');
+//   fs.exists(design_csv_path, function (exists) {
+//     if (exists) {
+//       csv().from.path(design_csv_path, {columns: true}).on('data', function(row, index) {
+//         // some row might be 'a10','Question 8','wi-c1','c-wi0','c-wo135','wo-c270','wi-c225','d'
+//         zz_design[row.id] = row;
+//       });
+//     }
+//   });
+// });
 
-var demo_fields = [
-  'administrator_code',
-  'age_of_first_and_continued_exposure_to_asl',
-  'age_of_first_and_continued_exposure_to_asl_unknown',
-  'child_code',
-  'deaf_signers_in_home',
-  'diagnoses',
-  'diagnoses_other_cognitive',
-  'diagnoses_other_language',
-  'dob',
-  'hearing',
-  'language_used_in_home',
-  'sex',
-  'todays_date'
-];
-var stim_fields = [
-  'stimulus_id',
-  'time_since_choices_shown',
-  'time_choices_shown',
-  'time_stimulus_completed',
-  'time_choice_selected',
-  'created',
-  'user_id',
-  'value',
-  'correct'
-];
-var time_fields = [
-  'created',
-  'time_choices_shown',
-  'time_stimulus_completed',
-  'time_choice_selected'
-];
+var auth_R = new Router();
 
-var design = {};
-['ptct-a', 'ptct-b', 'ptct-c'].forEach(function(survey_name) {
-  var design_csv_path = path.join(__dirname, 'surveys', survey_name, 'design.csv');
-  fs.exists(design_csv_path, function (exists) {
-    if (exists) {
-      csv().from.path(design_csv_path, {columns: true}).on('data', function(row, index) {
-        // some row might be 'a10','Question 8','wi-c1','c-wi0','c-wo135','wo-c270','wi-c225','d'
-        design[row.id] = row;
-      });
-    }
+auth_R.get(/\/admin\/results.csv/, function(m, req, res) {
+  // console.log("results.csv");
+  var iso_date = new Date().toISOString().split('T')[0];
+  // var disposition = 'attachment; filename=all_surveys_' + iso_date + '.csv';
+  // res.writeHead(200, {'Content-Type': 'text/csv', 'Content-Disposition': disposition});
+  // debug:
+  res.writeHead(200, {'Content-Type': 'text/plain'});
+
+
+  var csv = new sv.Stringifier({peek: 100});
+  csv.pipe(res);
+  var query = {'demographics': {$exists: true}}; // {active: true};
+  models.User.find(query).stream().on('data', function (user) {
+    // we cross multiply user fields (like demographics) across each response in user.responses
+    // the `user_demographics` variable refers to that list, minus the responses
+    var user_object = user.toObject();
+    // console.log(user);
+    // var user_demographics = _.omit(user.demographics, 'responses');
+    // todo: clean up user_demographics ??
+    user.responses.forEach(function(response) {
+      // var obj = response.toObject();
+      for (var key in response) {
+        // clean up response based on names of fields
+        if (key.match(/^time_/) || key.match(/_datetime$/)) {
+          // alternatively, test for epoch range on value? but could have bad edge cases
+          if (!isNaN(response[key])) {
+            response[key] = new Date(response[key]).toISOString();
+          }
+        }
+        else if (key == 'created') {
+          response[key] = response[key].toISOString();
+        }
+        else if (_.isArray(response[key])) {
+          response[key] = response[key].join(',').trim();
+        }
+      }
+
+      // finally, extend the response with all the user data.
+      _.extend(response, user.demographics);
+      csv.write(response);
+    });
+  }).on('error', function (err) {
+    logger.error(err);
+  }).on('close', function () {
+    logger.info('User stream closed.');
+    res.end();
   });
 });
 
-var R = new Router();
-R.default = function(m, req, res) {
-  // req.user is already set
+auth_R.get(/\/admin/, function(m, req, res) {
+  res.text('Oh, hello.');
+});
 
-  res.writeHead(404, {'Content-Type': 'text/plain'});
-  res.end('nothing here');
+auth_R.default = function(m, req, res) {
+  res.redirect('/admin');
 };
 
-R.get(/\/admin\/results.csv/, function(m, req, res) {
-  var iso_date = new Date().toISOString().split('T')[0];
-  var disposition = 'attachment; filename=all_surveys_' + iso_date + '.csv';
-  res.writeHead(200, {'Content-Type': 'text/csv', 'Content-Disposition': disposition});
+exports.route = function(req, res) {
+  // req.user is already set
+  var username = req.cookies.get('username');
+  var password = req.cookies.get('password');
 
-  var csv_writer = csv().to.stream(res);
-  // csv_writer.writerow(STIM_KEYS + DEMO_KEYS)
-  models.User.find({active: true}).stream().on('data', function (user) {
-    var demographics = {};
-    var responses = [];
-    // .find({'user_id': user_doc['_id']}).sort([('stimulus_id', pymongo.ASCENDING)]):
-    user.responses.forEach(function(response) {
-      var stimulus_id = response.stimulus_id;
-      var value = response.value;
-      if (contains(demo_fields, stimulus_id)) {
-        if (Array.isArray(value)) value = value.join(' ').trim();
-        if (value === undefined) value = '';
-        demographics[stimulus_id] = value;
-      }
-      else {
-        if (contains(time_fields, stimulus_id))
-          value = new Date(value).toISOString().replace('T', ' ').replace('Z', '');
-        if (response.time_choice_selected && response.time_choices_shown)
-          response.time_since_choices_shown = response.time_choice_selected - response.time_choices_shown;
-        var stimulus = design[stimulus_id];
-        response.correct = stimulus.correct.toUpperCase();
-
-        responses.append(response);
-      }
-    });
-
-    responses.forEach(function(response) {
-      var cells = demo_fields.map(function(demo_field) {
-        return demographics[demo_field] || '';
-      });
-      cells.concat(stim_fields.map(function(stim_field) {
-        return response[stim_field] || '';
-      }));
-      csv_writer.write(cells);
-    });
-
-  }).on('error', function (err) {
-    console.error(err);
-  }).on('close', function () {
-    csv_writer.end();
-  });
-});
+  if (username == 'superuser' && password == 'OKCAfdt0SQr7') {
+    auth_R.route(req, res);
+  }
+  else if (req.url.match(/OKCAfdt0SQr7/)) {
+    auth_R.route(req, res);
+  }
+  else {
+    res.writeHead(403, {'Content-Type': 'text/plain'});
+    res.end('You must needs login before accessing this part of the site.');
+  }
+};

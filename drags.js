@@ -1,11 +1,9 @@
-'use strict'; /*jslint nomen: true, node: true, indent: 2, debug: true, vars: true, es5: true */
-var __ = require('underscore');
+'use strict'; /*jslint node: true, es5: true, indent: 2 */
 var fs = require('fs');
 var os = require('os');
 var path = require('path');
 var util = require('util');
 var Cookies = require('cookies');
-var Router = require('regex-router');
 var amulet = require('amulet');
 
 var cluster = require('cluster');
@@ -14,13 +12,12 @@ var domain = require('domain');
 var http = require('http-enhanced');
 var models = require('./models');
 var logger = require('./logger');
+var Router = require('regex-router');
 
 var argv = require('optimist').default({
   port: 1301,
   hostname: '127.0.0.1',
-  admin: 'superuser',
-  password: 'OKCAfdt0SQr7',
-  'default': '/ptct-video/',
+  'default': '/ptct-video',
   maxcores: 16,
   surveys_path: path.join(__dirname, 'surveys'),
 }).argv;
@@ -40,13 +37,14 @@ function work() {
     res.redirect(argv.default);
   };
 
-  R.GET(/^\/favicon.ico/, function(m, req, res) {
+  R.get(/^\/favicon.ico/, function(m, req, res) {
     res.die('');
   });
 
-  var admin = require('./admin');
+  var admin_R = require('./admin');
+  // need something like R.forward(/whatev/, other_R)
   R.any(/^\/admin/, function(m, req, res) {
-    admin.route(req, res);
+    admin_R.route(req, res);
   });
 
   fs.readdir(argv.surveys_path, function(err, survey_paths) {
@@ -69,8 +67,7 @@ function work() {
   });
 
   var root = function(req, res) {
-    req.data = '';
-    req.on('data', function(chunk) { req.data += chunk; });
+    req.saveData();
     req.cookies = new Cookies(req, res);
     logger.info(req.method +  ': ' + req.url);
 

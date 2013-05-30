@@ -1,4 +1,4 @@
-'use strict'; /*jslint nomen: true, node: true, indent: 2, debug: true, vars: true, es5: true */
+'use strict'; /*jslint node: true, es5: true, indent: 2 */
 var __ = require('underscore');
 var mongoose = require('mongoose');
 mongoose.connect('localhost', 'drags');
@@ -15,6 +15,7 @@ var userSchema = new mongoose.Schema({
     type: Date,
     'default': Date.now
   },
+  demographics: {}, // mongoose.Schema.Types.Mixed
   tickets: {
     type: [String],
     'default': function() {
@@ -23,10 +24,10 @@ var userSchema = new mongoose.Schema({
     }
   },
   responses: [
-    /* e.g., {
+    /* e.g., [
       stimulus_id: 'language_used_in_home',
       ...
-    } */
+    }, ... */
   ]
 });
 

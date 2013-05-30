@@ -14,7 +14,7 @@
     "amulet": "*",
     "async": "*",
     "cookies": "git://github.com/chbrown/cookies.git",
-    "csv": "*",
+    "sv": "*",
     "fsm": "git://github.com/chbrown/fsm.git",
     "http-enhanced": "*",
     "mongoose": "*",

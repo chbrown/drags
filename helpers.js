@@ -1,4 +1,4 @@
-'use strict'; /*jslint nomen: true, node: true, indent: 2, debug: true, vars: true, es5: true */
+'use strict'; /*jslint node: true, es5: true, indent: 2 */
 exports.parseJSON = function(json, default_result) {
   var result;
   try {

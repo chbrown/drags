@@ -1,10 +1,8 @@
 <!DOCTYPE html>
-<title>PTCT Survey Admin</title>
-<link rel="stylesheet" href="/master.css" type="text/css" media="all">
+<meta charset="utf-8">
+<title>DRAGS admin</title>
+<link rel="stylesheet" href="/static/site.css" type="text/css" media="all">
+<link rel="icon" href="/static/favicon.ico" type="image/x-icon">
 <script src="/static/compiled.js"></script>
-
-<div style="padding: 20px;">
-  <div id="content">
-    {{<}}
-  </div>
-</div>
+<script src="/static/local.js"></script>
+{{<}}
