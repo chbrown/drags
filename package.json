@@ -1,8 +1,7 @@
 {
   "name": "drags",
   "version": "0.2.1",
-  "author": "Christopher Brown <io@henrian.com>",
-  "main": "drags.js",
+  "author": "Christopher Brown <io@henrian.com> (http://henrian.com)",
   "description": "Digital Research-Assistant Graduate Student",
   "keywords": ["drags", "surveys"],
   "homepage": "https://github.com/chbrown/drags",
@@ -14,20 +13,29 @@
     "amulet": "*",
     "async": "*",
     "cookies": "git://github.com/chbrown/cookies.git",
-    "sv": "*",
     "fsm": "git://github.com/chbrown/fsm.git",
     "http-enhanced": "*",
     "mongoose": "*",
+    "npm": "*",
     "optimist": "*",
-    "regex-router": "*",
+    "regex-router": "~0.2",
+    "send": "*",
+    "sv": "*",
     "underscore": "*",
-    "winston": "0.6.x"
+    "winston": "*"
   },
   "devDependencies": {
     "grunt": "*",
     "grunt-contrib-uglify": "*",
     "grunt-contrib-handlebars": "git://github.com/chbrown/grunt-contrib-handlebars.git"
   },
+  "bin": {
+    "drags": "bin/drags.js"
+  },
+
+  "surveys": {
+  },
+
   "staticPattern": "static/lib/{file}",
   "staticDependencies": {
     "json2": "*",
@@ -35,7 +43,6 @@
     "jquery": "*",
     "backbone": "*",
     "handlebars": "*",
-    "normalize": "*",
-    "jquery-plugins": "git://github.com/chbrown/jquery-plugins.git"
+    "misc-js": "git://github.com/chbrown/misc-js.git"
   }
 }

@@ -1,12 +1,14 @@
-'use strict'; /*jslint node: true, es5: true, indent: 2 */
+'use strict'; /*jslint es5: true, node: true, indent: 2 */
 
 module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     handlebars: {
       all: {
-        glob: 'templates/*.mu',
-        dest: 'static/templates.js'
+        templates: 'templates/**/*.bars',
+        root: 'templates',
+        extension: 'bars',
+        output: 'static/templates.js',
       }
     },
     uglify: {
@@ -21,7 +23,7 @@ module.exports = function(grunt) {
             'static/lib/jquery.js',
             'static/lib/backbone.js',
             'static/lib/jquery.flags.js',
-            'static/lib/jquery.cookie.js',
+            'static/lib/cookies.js',
             'static/lib/handlebars.runtime.js',
             // 'static/local.js',
           ]

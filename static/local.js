@@ -1,15 +1,59 @@
-function Logger() {
-  this.console_available = !(typeof console === "undefined" || typeof console.log === "undefined");
+function EventEmitter() {
+  this.events = {};
 }
+EventEmitter.prototype.on = function(name, callback, context) {
+  if (this.events[name] === undefined) this.events[name] = [];
+  this.events[name].push({fn: callback, thisArg: context});
+  return this;
+};
+EventEmitter.prototype.off = function(name, callback) {
+  for (var i = (this.events[name] ? this.events[name].length : 0) - 1; i >= 0; i--) {
+    if (this.events[name][i].callback === callback) {
+      this.events[name].splice(i, 1);
+    }
+  }
+};
+EventEmitter.prototype.emit = function(name /*, args*/) {
+  var length = this.events[name] ? this.events[name].length : 0;
+  var args = Array.prototype.slice.call(arguments, 1);
+  for (var i = 0; i < length; i++) {
+    var handler = this.events[name][i];
+    handler.fn.apply(handler.thisArg, args);
+  }
+};
+
+function Logger(opts) {
+  /** `new Logger`: create new logger for glossing over a missing console
+  `level`: the minimum level of logs to keep
+  */
+  if (opts === undefined) opts = {};
+  if (opts.level === undefined) opts.level = 'info';
+
+  this.console_available = !(typeof console === "undefined" || typeof console.log === "undefined");
+  // this.levels comes mostly from python
+  this.levels = {
+    fatal: 60,
+    critical: 50,
+    error: 40,
+    warn: 30,
+    info: 20,
+    debug: 10,
+    notset: 0
+  };
+  this.setLevel(opts.level);
+}
+Logger.prototype.setLevel = function(level) {
+  this.minimum = this.levels[level];
+};
 Logger.prototype._log = function(level, args) {
-  if (this.console_available) {
-    if (level === 'error') {
+  if (this.console_available && this.levels[level] >= this.minimum) {
+    if (level == 'error') {
       console.error.apply(console, args);
     }
-    else if (level === 'info') {
+    else if (level == 'info') {
       console.info.apply(console, args);
     }
-    else if (level === 'debug') {
+    else if (level == 'debug') {
       console.debug.apply(console, args);
     }
     else {
@@ -17,25 +61,15 @@ Logger.prototype._log = function(level, args) {
     }
   }
 };
-function _levelClosure(level) {
-  return function() { this._log(level, arguments); };
-}
-var levels = ['error', 'warn', 'info', 'debug'];
-for (var i = 0, level; (level = levels[i]); i++) {
-  Logger.prototype[level] = _levelClosure(level);
-}
-
-// local setup
-function timestamp() { return (new Date()).getTime(); }
-$.defaultCookie = {expires: new Date(timestamp() + 31*86400*1000), path: '/'};
-$.ajaxSetup({
-  type: 'POST',
-  dataType: 'json',
-  contentType: 'application/json',
-  accepts: 'application/json',
-  processData: false
+['error', 'warn', 'info', 'debug'].forEach(function(level) {
+  Logger.prototype[level] = function(/* args */) {
+    this._log(level, arguments);
+  };
 });
 
+function time() {
+  return (new Date()).getTime();
+}
 
 $.fn.objectifyForm = function() {
   var form = {};

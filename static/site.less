@@ -1,19 +1,27 @@
-@import 'lib/normalize';
-
 body {
   font-family: Arial, Verdana;
   font-size: 12px;
 }
+a {
+  color: #2d3a51;
+  &:hover {
+    color: #2b578a;
+  }
+}
+button {
+  margin: 0;
+}
 
 .nowrap { white-space: nowrap; }
-a { color: #2d3a51; }
-a:hover { color: #2b578a; }
 
 #container {
   background: white;
   width: 720px;
   margin: 0 auto;
   padding: 30px;
+}
+#stage {
+  text-align: center;
 }
 
 table.stimuli {
@@ -47,10 +55,6 @@ table.stimuli_choice {
 //   font-variant: small-caps;
 // }
 
-#stage {
-  text-align: center;
-}
-
 .progress-bar {
   border: 1px solid black;
   height: 10px;
@@ -70,7 +74,6 @@ table.choices {
   button {
     font-size: 110%;
     padding: 3px 30px;
-    text-transform: capitalize;
   }
 }
 
@@ -78,13 +81,15 @@ input[type=text], input[type=password] {
   margin: 2px 0 8px;
   display: block;
 }
-#form {
+form {
   & > div[id] {
-    margin: 15px 0;
+    margin: 10px 0;
   }
   label {
     display: block;
-    font-weight: bold;
+    span:first-child {
+      font-weight: bold;
+    }
     input[type=radio], input[type=checkbox] {
       margin: 4px 2px 5px 2px;
     }

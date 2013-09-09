@@ -18,15 +18,15 @@
     <th>Time since choices shown</th>
     <th>Created</th>
   </tr>
-  % for response in table:
+  {{#response}}
   <tr>
-    <td><a href="/admin/users/${response.user_id}">${response.user_id}</a></td>
-    <td>${response.stimulus_id}</td>
-    <td>${response.value}</td>
-    <td>${response.time_since_choices_shown}</td>
-    <td class="nowrap">${str(response.created)}</td>
+    <td><a href="/admin/users/{{user_id}}">{{user_id}}</a></td>
+    <td>{{stimulus_id}}</td>
+    <td>{{value}}</td>
+    <td>{{time_since_choices_shown}}</td>
+    <td class="nowrap">{{created}}</td>
   </tr>
-  % endfor
+  {{/}}
 </table>
 
 <script>
