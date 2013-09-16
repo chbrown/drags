@@ -1,11 +1,36 @@
 "use strict"; /*jslint indent: 2 */ /*globals $, _, EventEmitter */
 // prereqs: underscore.js, jquery.js, EventEmitter
 var Preloader = (function() {
-  var logger = window.logger;
-  if (logger === undefined) {
-    var noop = function() {};
-    logger = {error: noop, warn: noop, info: noop, debug: noop};
-  }
+  var el = function(tagName, attributes, opts) {
+    /** el: create a new DOM element, using given tag and attributes.
+    1. Appending each of `opts.children` [Node] as child nodes.
+    2. Next, appending `opts.text` String as a text node.
+    3. Finally, appending it to `opts.parent` Node if provided.
+    */
+    var element = document.createElement(tagName);
+    // attributes is an object
+    if (attributes) {
+      for (var name in attributes) {
+        element.setAttribute(name, attributes[name]);
+      }
+    }
+    // text is a string
+    if (opts) {
+      if (opts.children) {
+        for (var i = 0, l = opts.children.length; i < l; i++) {
+          element.appendChild(opts.children[i]);
+        }
+      }
+      if (opts.text) {
+        var text_node = document.createTextNode(opts.text);
+        element.appendChild(text_node);
+      }
+      if (opts.parent) {
+        parent.appendChild(element);
+      }
+    }
+    return element;
+  };
 
   var templates = {
     video: function(c) {
@@ -73,7 +98,7 @@ var Preloader = (function() {
     EventEmitter.call(this);
     this.url = url;
     this.id = url.replace(/\W/g, '');
-    this.type = guessType(url); // returns 'video', 'audio', or 'image'
+    this.type = guessType(url); // one of 'video', 'audio', or 'image'
     this.$element = null;
     this.complete = false;
   };
@@ -92,13 +117,13 @@ var Preloader = (function() {
       this.$element = null;
     }
   };
-  Resource.prototype.insert = function($container, rush) {
+  Resource.prototype.insert = function(container, rush) {
     var self = this;
     var ctx = {url: this.url, id: this.id};
     var html = templates[this.type](ctx);
 
     // attach the element so we can detach it later in abort if needed
-    this.$element = $(html).appendTo($container);
+    this.$element = $(html).appendTo(container);
     var media = this.$element[0];
     var started = time();
 
@@ -153,7 +178,7 @@ var Preloader = (function() {
         done();
       }
       else if (elapsed > Preloader.timeouts.slow && buffered_length === 0) {
-        // logger.info('The media cannot be found or loaded.', url, media);
+        // simply can't find it all, probably a 404
         done(new Error('Cannot find or load media.'));
       }
       else if (elapsed > Preloader.timeouts.slow && last_10_diff_sum < 0.01) {
@@ -179,25 +204,40 @@ var Preloader = (function() {
     this.on('finish', callback);
   };
 
+  var NullLogger = function() {};
+  NullLogger.prototype.error = NullLogger.prototype.warn = NullLogger.prototype.info = NullLogger.prototype.debug = function() {};
 
-  var Preloader = function($container) {
+  var Preloader = function(options) {
     /** new Preloader: create a new preloader helper, specifying where in the
     DOM it should put loading elements.
 
     Emits 'finish' events
 
-    `$container`: jQuery element
+    `options`: Object
+        `container`: DOM Element Node (optional)
+        `logger`: logging object (optional)
+        `urls`: List of urls to preload (optional)
+        `paused`: initial state (defaults to true)
     */
     EventEmitter.call(this);
-    if ($container === undefined) {
-      // if no container is provided, create new node at the end of the document to hold the elements.
-      $container = $('<div style="display: none"></div>').appendTo(document.body);
-    }
-    this.$container = $container;
+
     // this.resources is a list of Resource objects
     this.resources = [];
-    // start off paused (calling preloader.loop() is a noop until it is unpaused)
-    this.paused = true;
+
+    // set option defaults
+    var opts = _.extend({}, Preloader.defaults, options);
+    // container may be null, but the default won't be created until one is needed
+    this.container = opts.container;
+    this.logger = opts.logger;
+    this.paused = opts.paused;
+
+    if (opts.urls) {
+      this.add.apply(this, opts.urls);
+    }
+  };
+  Preloader.defaults = {
+    logger: new NullLogger(),
+    paused: true
   };
   Preloader.timeouts = {
     // in seconds
@@ -208,16 +248,27 @@ var Preloader = (function() {
   };
   Preloader.prototype = Object.create(EventEmitter.prototype);
   Preloader.prototype.constructor = Preloader;
-  Preloader.prototype.setContainer = function($container) {
-    // move over children from the current container first
-    $container.append(this.$container.children());
-    this.$container = $container;
+  Preloader.prototype.getContainer = function() {
+    if (this.container === undefined) {
+      // if no container is provided, create new node at the end of the document to hold the elements.
+      this.container = el('div', {style: "display: none"}, {parent: document.body});
+    }
+    return this.container;
+  };
+  Preloader.prototype.setContainer = function(container) {
+    if (this.container) {
+      // first move over children from the current container
+      while (this.container.firstChild) {
+        container.appendChild(this.container.firstChild);
+      }
+    }
+    this.container = container;
   };
   Preloader.prototype.add = function(url1 /*, url2, ...*/) {
     // each url, on loading, will be stuck in the dom, in a hidden div.
     // keyed by their santized urls as element ids, i.e. url.replace(/\W/g, '')
     var urls = Array.prototype.slice.call(arguments, 0);
-    logger.debug('Preloader.add: adding', urls.length, 'urls:', urls);
+    this.logger.debug('Preloader.add: adding', urls.length, 'urls:', urls);
     for (var i = 0, l = urls.length; i < l; i++) {
       var url = urls[i];
       if (!this.findResource(url)) {
@@ -247,44 +298,43 @@ var Preloader = (function() {
   };
   Preloader.prototype.pause = function() {
     /** pause: pause the preloader, but don't abort the current load */
-    logger.debug('Preloader.pause');
+    this.logger.debug('Preloader.pause');
     this.paused = true;
   };
   Preloader.prototype.abort = function() {
     /** abort: pause the preloader and abort the current load */
-    logger.debug('Preloader.abort');
+    this.logger.debug('Preloader.abort');
     // if we haven't loaded everything yet, find the current resource and abort it
     var current_resource = this.currentResource();
     if (current_resource) current_resource.abort();
   };
   Preloader.prototype.resume = function() {
-    logger.debug('Preloader.resume: was previously ' + (this.paused ? '' : 'not ') + 'paused.');
+    this.logger.debug('Preloader.resume (was previously ' + (this.paused ? '' : 'not ') + 'paused)');
     this.paused = false;
     this.loop();
   };
   Preloader.prototype.loop = function() {
     // this can be called multiple times without ill effect
-    // var resource = this.resources[this.index];
-    // logger.debug('Preloader.loop: index=', this.index);
     if (this.paused) {
-      return logger.debug('Preloader.loop: paused');
+      return this.logger.debug('Preloader.loop (paused)');
     }
 
     var current_resource = this.currentResource();
     if (!current_resource) {
       this.emit('finish');
-      return logger.debug('Preloader.loop: no more resources');
+      this.logger.debug('Preloader.loop (no more resources)');
+      return;
     }
 
     if (current_resource.$element) {
-      logger.debug('Preloader.loop: in-progress', current_resource);
+      this.logger.debug('Preloader.loop (in-progress: ' + current_resource.url + ')');
     }
     else {
       var self = this;
-      current_resource.insert(this.$container);
-      logger.debug('Preloader.loop: inserted', current_resource);
+      current_resource.insert(this.getContainer(), false);
+      this.logger.debug('Preloader.loop (inserted: ' + current_resource.url + ')');
       current_resource.ready(function(err) {
-        if (err) logger.error('Resource error: ' + err);
+        if (err) self.logger.error('Resource error: ' + err.toString());
         self.loop();
       });
     }
@@ -298,8 +348,9 @@ var Preloader = (function() {
     `url`: String
     `callback`: function(Error | null, jQuery element | null)
     */
-    logger.debug('Preloader.load: url=', url);
+    this.logger.debug('Preloader.load: url=', url);
     var resource = this.findResource(url);
+    var self = this;
 
     if (!resource) {
       resource = new Resource(url);
@@ -308,10 +359,10 @@ var Preloader = (function() {
 
     if (!resource.$element) {
       // rush: true
-      resource.insert(this.$container, true);
+      resource.insert(this.getContainer(), true);
     }
     resource.ready(function(err) {
-      if (err) logger.error('Resource error: ' + err);
+      if (err) self.logger.error('Resource error: ' + err);
       callback(err, resource.$element);
     });
     return resource;
