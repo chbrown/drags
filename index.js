@@ -1,5 +1,4 @@
 'use strict'; /*jslint es5: true, node: true, indent: 2 */
-var npm = require('npm');
 var logger = require('./lib/logger');
 var async = require('async');
 
@@ -37,27 +36,30 @@ RangeCollection.prototype.contains = function(index, inclusive) {
 };
 
 var installModules = exports.installModules = function(paths, callback) {
-  npm.on('log', function(message) { logger.info(message); });
+  var npm = require('npm');
+  npm.on('log', function(message) {
+    logger.info(message);
+  });
 
-  async.forEach(paths, function(path, callback) {
-    path = path.replace(/^~/, process.env.HOME);
-    npm.load({prefix: path}, function(err) {
-      if (err) {
-        logger.error('npm.load error', err);
-        return callback(err);
-      }
+  npm.load(function(err) {
+    if (err) {
+      logger.error('npm.load error', err);
+      return callback(err);
+    }
 
-      logger.info('`npm install` in "%s"', path);
-      npm.install(function(err, data) {
+    // must be in series because npm is a global
+    async.eachSeries(paths, function(path, callback) {
+      npm.prefix = path.replace(/^~/, process.env.HOME);
+      logger.info('`npm install` in "%s"', npm.prefix);
+      npm.install(function(err) {
         if (err) {
           logger.error('npm.install error', err);
           return callback(err);
         }
 
-        logger.debug('npm.install %s', data);
-        // command succeeded, and data might have some info
-        return callback();
+        logger.debug('`npm.install` finished');
+        callback();
       });
-    });
-  }, callback);
+    }, callback);
+  });
 };
