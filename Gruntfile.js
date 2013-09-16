@@ -35,5 +35,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-handlebars');
   grunt.loadNpmTasks('grunt-contrib-uglify');
 
-  grunt.registerTask('default', ['handlebars','uglify']);
+  grunt.registerTask('all', ['handlebars', 'uglify']);
+  grunt.registerTask('default', ['uglify']);
 };
