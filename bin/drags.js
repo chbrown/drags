@@ -6,7 +6,6 @@ var path = require('path');
 var cluster = require('cluster');
 
 var logger = require('../lib/logger');
-var models = require('../lib/models');
 
 var drags = require('..');
 
@@ -40,8 +39,6 @@ var opts = require('optimist')
 
 var argv = opts.argv;
 logger.level = argv.verbose ? 'debug' : 'info';
-
-models.connect(argv.database);
 
 var commands = {
   install: function() {
@@ -89,11 +86,15 @@ var commands = {
     var email = argv._[1];
     var password = argv._[2];
 
+    var models = require('../lib/models');
+    models.connect(argv.database);
+
     var user = new models.User({email: email, password: password, administrator: true});
     user.save(function(err) {
       if (err) return console.error(err);
 
       console.log('Created user: %s', user._id, user.toJSON());
+      // the models connection will hang unless we exit forcibly
       process.exit();
     });
   }
