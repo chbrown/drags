@@ -13,22 +13,15 @@ This is just like an http server request handler.
 Note, though, that the received response will be http-enhanced, and has a few additional fields already added to it.
 
 
-## Basic nginx configuration
+## Basic nginx configuration, if you _must_ have nginx
 
     server {
-        listen 1300;
-        server_name kl localhost;
-        proxy_set_header X-Real-IP $remote_addr;
+        listen 80;
+        server_name drags.henrian.com;
         gzip on;
 
-        set $root /Users/chbrown/github/drags;
-
-        location /lib { root $root/static; }
-        location ~ ^/surveys/([-a-z]*)/(.*)$ {
-            alias $root/surveys/$1/static/$2;
-            break;
-        }
-        location / { proxy_pass http://127.0.0.1:1301; }
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_pass http://127.0.0.1:1301;
     }
 
 ## Supervisor.d

@@ -15,7 +15,7 @@ var R = new Router(function(req, res) {
 
 /** GET /users
 show login page */
-R.get(/^\/users/, function(req, res) {
+R.get(/^\/users(\?|$)/, function(req, res) {
   if (req.user && req.user.administrator) {
     // boost administrators straight up to /admin
     return res.redirect('/admin');
@@ -55,12 +55,14 @@ R.post('/users', function(req, res) {
 /** GET /logout
 helper page to purge ticket */
 R.get('/users/logout', function(req, res) {
-  // var urlObj = url.parse(req.url, true);
+  logger.debug('Deleting ticket cookie "%s" for user "%s"', req.cookies.get('ticket'), req.user._id);
   req.cookies.del('ticket');
 
   res.redirect('/users');
 });
 
 module.exports = function(req, res) {
+  /** Handle /users* requests
+  */
   R.route(req, res);
 };

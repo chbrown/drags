@@ -20,7 +20,6 @@ var opts = require('optimist')
     host: 'hostname to listen on',
     port: 'port to listen on',
 
-    root: 'redirect requests for / to this url',
     database: 'mongodb database to use',
 
     help: 'print this help message',
@@ -33,7 +32,6 @@ var opts = require('optimist')
     forks: os.cpus().length,
     hostname: '127.0.0.1',
     port: 1301,
-    root: '/ptct-video',
     database: 'drags',
   });
 
@@ -62,17 +60,19 @@ var commands = {
     * Use `worker` for all real controller / action code.
 
     */
-    logger.info('Initializing with %d forks', argv.forks);
+    var args = [
+      '--hostname', argv.hostname,
+      '--port', argv.port,
+      '--database', argv.database,
+    ].concat(argv.verbose ? ['--verbose'] : []);
+    logger.info('Starting %d forks; argv: %s', argv.forks, args.join(' '));
+
     cluster.setupMaster({
       exec: path.join(__dirname, '..', 'server.js'),
-      args: [
-        '--hostname', argv.hostname,
-        '--port', argv.port,
-        '--root', argv.root,
-        '--database', argv.database,
-      ],
+      args: args,
       // silent: true,
     });
+
     for (var i = 0; i < argv.forks; i++) {
       cluster.fork();
     }

@@ -11,7 +11,8 @@ var models = require('./lib/models');
 var root_controller = require('./controllers');
 
 var argv = require('optimist').argv;
-// this module should be forked with --hostname, --port, --root, and --database arguments
+// this module should be forked with --hostname, --port, --database, and --verbose arguments
+logger.level = argv.verbose ? 'debug' : 'info';
 
 models.connect(argv.database);
 
