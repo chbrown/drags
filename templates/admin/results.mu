@@ -5,7 +5,7 @@
   <a href="/admin/results.csv?view">View CSV</a>
 </section>
 
-<h2>{{responses.length}} recent responses</h2>
+<h2>{{responses.length}} responses from the {{users.length}} most recently created users</h2>
 <table class="tablesorter">
   <tr>
     <th>User ID</th>

@@ -30,6 +30,7 @@ R.get('/admin', function(req, res) {
 
     var ctx = {
       ticket_user: req.user,
+      users: users,
       responses: responses,
     };
     amulet.stream(['layout.mu', 'admin/layout.mu', 'admin/results.mu'], ctx).pipe(res);
@@ -53,8 +54,7 @@ R.get(/^\/admin\/results.csv/, function(req, res) {
   var csv = new sv.Stringifier({peek: 200});
   csv.pipe(res);
 
-  var query = {demographics: {$exists: true}}; // {active: true};
-  models.User.find(query).stream()
+  models.User.findNonEmpty().stream()
   .on('error', function(err) {
     logger.error(err);
   })
