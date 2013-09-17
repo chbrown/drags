@@ -6,12 +6,15 @@ var path = require('path');
 var cluster = require('cluster');
 
 var logger = require('../lib/logger');
+var models = require('../lib/models');
+
 var drags = require('..');
 
 var opts = require('optimist')
   .usage([
     'Usage: drags ui [options]',
-    '       drags install [options]'
+    '       drags install [options]',
+    '       drags add-administrator <email> <password>',
   ].join('\n'))
   .describe({
     forks: 'maximum number of workers to spawn',
@@ -37,6 +40,8 @@ var opts = require('optimist')
 
 var argv = opts.argv;
 logger.level = argv.verbose ? 'debug' : 'info';
+
+models.connect(argv.database);
 
 var commands = {
   install: function() {
@@ -80,6 +85,18 @@ var commands = {
     });
 
   },
+  'add-administrator': function() {
+    var email = argv._[1];
+    var password = argv._[2];
+
+    var user = new models.User({email: email, password: password, administrator: true});
+    user.save(function(err) {
+      if (err) return console.error(err);
+
+      console.log('Created user: %s', user._id, user.toJSON());
+      process.exit();
+    });
+  }
 };
 
 if (argv.help) {

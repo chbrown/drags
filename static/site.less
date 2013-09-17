@@ -1,3 +1,6 @@
+* {
+  box-sizing: border-box;
+}
 body {
   font-family: Arial, Verdana;
   font-size: 12px;
@@ -8,8 +11,44 @@ a {
     color: #2b578a;
   }
 }
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #FDFDFD;
+  padding: 0 2px;
+  width: 100%;
+  border-bottom: 1px solid #CCC;
+  a, span {
+    display: inline-block;
+    padding: 2px 6px;
+    margin: 2px;
+    background-color: white;
+    border-radius: 2px;
+    border: 1px solid transparent;
+  }
+  a {
+    border: 1px solid #999;
+    &:hover {
+      background-color: #F7F7F7;
+    }
+  }
+}
+.admin {
+  padding: 20px 5px 5px;
+}
+
 button {
   margin: 0;
+}
+table {
+  border-collapse: collapse;
+  th {
+    text-align: left;
+  }
+  th, td {
+    padding: 2px 4px;
+  }
 }
 
 .nowrap { white-space: nowrap; }

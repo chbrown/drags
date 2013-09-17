@@ -34,6 +34,8 @@
   },
 
   "surveys": {
+    "ptct-video": "~/work/asl-surveys/ptct-video",
+    "ptct-image": "~/work/asl-surveys/ptct-image"
   },
 
   "staticPattern": "static/lib/{file}",
@@ -43,6 +45,7 @@
     "jquery": "*",
     "backbone": "*",
     "handlebars": "*",
+    "moment": "*",
     "misc-js": "git://github.com/chbrown/misc-js.git"
   }
 }

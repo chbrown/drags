@@ -98,6 +98,18 @@ To handle serving static files from various sub-packages, we don't reverse-proxy
 Instead, I'm using visionmedia's [`send`](https://github.com/visionmedia/send) package.
 If that doesn't pan out, we could try [`node-static`](https://github.com/cloudhead/node-static).
 
+## Debugging the database:
+
+```bash
+j drags
+node
+var models = require('./lib/models');
+models.connect('drags');
+
+// e.g.,
+models.User.findNonEmpty().count(console.log);
+```
+
 ## License
 
 Copyright © 2013 Christopher Brown. [MIT Licensed](LICENSE).

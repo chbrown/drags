@@ -24,6 +24,7 @@ module.exports = function(grunt) {
             'static/lib/backbone.js',
             'static/lib/jquery.flags.js',
             'static/lib/cookies.js',
+            'static/lib/moment.js',
             'static/lib/handlebars.runtime.js',
             // 'static/local.js',
           ]

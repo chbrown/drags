@@ -13,11 +13,6 @@
     var expires = new Date(time() + 31*86400*1000); // one month
     return {path: '/', expires: expires};
   });
-  </script>
-</head>
-<body>
-  {{<}}
-  <script>
   $.ajaxSetup({
     type: 'POST',
     dataType: 'json',
@@ -26,4 +21,7 @@
     processData: false
   });
   </script>
+</head>
+<body>
+  {{<}}
 </body>
