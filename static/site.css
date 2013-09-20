@@ -3,11 +3,12 @@ body{font-family:Arial,Verdana;font-size:12px}
 a{color:#2d3a51}a:hover{color:#2b578a}
 nav{position:fixed;top:0;left:0;background-color:#fdfdfd;padding:0 2px;width:100%;border-bottom:1px solid #ccc}nav a,nav span{display:inline-block;padding:2px 6px;margin:2px;background-color:#fff;border-radius:2px;border:1px solid transparent}
 nav a{border:1px solid #999}nav a:hover{background-color:#f7f7f7}
-.admin{padding:20px 5px 5px}
 button{margin:0}
 table{border-collapse:collapse}table th{text-align:left}
 table th,table td{padding:2px 4px}
+ul li{padding:.5ex 0}
 .nowrap{white-space:nowrap}
+.admin{padding:20px 5px 5px}
 #container{background:#fff;width:720px;margin:0 auto;padding:30px}
 #stage{text-align:center}
 table.stimuli{width:90%;margin:10px auto 20px auto}table.stimuli td{text-align:center;vertical-align:middle;width:33%}
