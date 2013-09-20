@@ -5,6 +5,9 @@
   "description": "Digital Research-Assistant Graduate Student",
   "keywords": ["drags", "surveys"],
   "homepage": "https://github.com/chbrown/drags",
+  "bin": {
+    "drags": "bin/drags.js"
+  },
   "repository": {
     "type": "git",
     "url": "git://github.com/chbrown/drags.git"
@@ -29,15 +32,6 @@
     "grunt-contrib-uglify": "*",
     "grunt-contrib-handlebars": "git://github.com/chbrown/grunt-contrib-handlebars.git"
   },
-  "bin": {
-    "drags": "bin/drags.js"
-  },
-
-  "surveys": {
-    "ptct-video": "~/work/asl-surveys/ptct-video",
-    "ptct-image": "~/work/asl-surveys/ptct-image"
-  },
-
   "staticPattern": "static/lib/{file}",
   "staticDependencies": {
     "json2": "*",

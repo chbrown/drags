@@ -1,20 +1,12 @@
 'use strict'; /*jslint es5: true, node: true, indent: 2 */
 // this file will be called multiple times for each child worker
-var path = require('path');
 var cluster = require('cluster');
 var domain = require('domain');
 var http = require('http-enhanced');
 
 var logger = require('./lib/logger');
 var models = require('./lib/models');
-
 var root_controller = require('./controllers');
-
-var argv = require('optimist').argv;
-// this module should be forked with --hostname, --port, --database, and --verbose arguments
-logger.level = argv.verbose ? 'debug' : 'info';
-
-models.connect(argv.database);
 
 var server = http.createServer(function(req, res) {
   var d = domain.create();
@@ -46,6 +38,17 @@ var server = http.createServer(function(req, res) {
   d.run(function() {
     root_controller(req, res);
   });
-}).listen(argv.port, argv.hostname, function() {
-  logger.info('Listening on %s:%d (pid %d)', argv.hostname, argv.port, process.pid);
+});
+
+process.on('message', function(argv) {
+  logger.level = argv.verbose ? 'debug' : 'info';
+  models.connect(argv.database);
+  root_controller.loadSurveys(argv.surveys, function(err) {
+    if (err) {
+      logger.error('Error loading surveys', err);
+    }
+  });
+  server.listen(argv.port, argv.hostname, function() {
+    logger.info('Listening on %s:%d (pid %d)', argv.hostname, argv.port, process.pid);
+  });
 });
