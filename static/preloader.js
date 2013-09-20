@@ -150,15 +150,29 @@ var Preloader = (function() {
         return done(new Error('Media cannot be found for the url.'));
       }
 
-      var buffered_length = (media.buffered && media.buffered.length > 0) ? media.buffered.end(0) : 0;
-      buffered_record.push(buffered_length);
+      var buffered_length = 0;
+      var completed = 0;
 
-      // media.duration might be NaN, probably when it hasn't loaded yet
-      var completed = isNaN(media.duration) ? 0 : buffered_length / media.duration;
-      self.emit('progress', completed);
+      if (self.type == 'image') {
+        if (media.complete) {
+          completed = 1.0;
+        }
+      }
+      else {
+        if (media.buffered && media.buffered.length > 0) {
+          buffered_length = media.buffered.end(0);
+        }
+        buffered_record.push(buffered_length);
+
+        // media.duration might be NaN, probably when it hasn't loaded yet
+        if (!isNaN(media.duration)) {
+          completed = buffered_length / media.duration;
+        }
+      }
 
       var elapsed = time() - started;
       var last_10_diff_sum = sum(diffs(buffered_record.slice(-10)));
+      self.emit('progress', completed);
 
       if (completed > 0.99) {
         // close enough, normal completion
