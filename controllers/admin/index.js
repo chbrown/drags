@@ -27,6 +27,12 @@ R.get('/admin', function(req, res) {
     });
 
     responses.length = 500;
+    // responses = _.sortBy(responses, 'created');
+    responses.sort(function(l, r) {
+      // return -1 if you want l ... r
+      // return +1 if you want r ... l
+      return (r.created || 0) - (l.created || 0);
+    });
 
     var ctx = {
       ticket_user: req.user,
@@ -60,10 +66,7 @@ R.get(/^\/admin\/results.csv/, function(req, res) {
   })
   .on('data', function(user) {
     // we cross multiply user fields (like demographics) across each response in user.responses
-    // the `user_demographics` variable refers to that list, minus the responses
-    var user_object = user.toObject();
-    // var user_demographics = _.omit(user.demographics, 'responses');
-    // todo: clean up user_demographics ??
+    // todo: aggregate and clean up user_demographics
     user.responses.forEach(function(response) {
 
       for (var key in response) {
@@ -83,7 +86,9 @@ R.get(/^\/admin\/results.csv/, function(req, res) {
       }
 
       // finally, extend the response with all the user data.
-      _.extend(response, user.demographics);
+      // _.extend(response, user.demographics);
+
+      response.user_id = user._id;
       csv.write(response);
     });
   })

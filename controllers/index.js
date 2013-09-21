@@ -67,7 +67,7 @@ handler.loadSurveys = function(surveys, callback) {
   lib.subdirectories(surveys, function(err, survey_paths) {
     if (err) return callback(err);
 
-    logger.debug('Found surveys: %s', survey_paths);
+    logger.debug('Found surveys:', survey_paths);
 
     var survey_names = survey_paths.map(path.basename);
     R.get('/', function(req, res) {
