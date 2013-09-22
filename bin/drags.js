@@ -20,7 +20,7 @@ var opts = require('optimist')
     verbose: 'print extra output',
     version: 'print version',
   })
-  .boolean(['help', 'ttv2', 'verbose', 'version'])
+  .boolean(['help', 'verbose', 'version'])
   .alias({verbose: 'v'})
   .default({
     forks: os.cpus().length,
