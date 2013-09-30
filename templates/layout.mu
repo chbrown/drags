@@ -9,10 +9,10 @@
   <script>
   // local setup
   var time = function() { return (new Date()).getTime(); };
-  cookies.setDefault(function() {
-    var expires = new Date(time() + 31*86400*1000); // one month
+  cookies.defaults = function() {
+    var expires = new Date(time() + 31*24*60*60*1000); // one month
     return {path: '/', expires: expires};
-  });
+  };
   $.ajaxSetup({
     type: 'POST',
     dataType: 'json',

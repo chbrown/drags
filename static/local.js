@@ -108,13 +108,13 @@ $.fn.objectifyForm = function() {
   return form;
 };
 
-$(function() {
-  // $('time').each(function(i, el) {
-  //   var original = el.innerText;
-  //   if (original) {
-  //     var display = moment(original).format('YYYY-MM-DD h:mm a');
-  //     el.setAttribute('datetime', original);
-  //     el.innerText = display;
-  //   }
-  // });
-});
+// $(function() {
+//   $('time').each(function(i, el) {
+//     var original = el.innerText;
+//     if (original) {
+//       var display = moment(original).format('YYYY-MM-DD h:mm a');
+//       el.setAttribute('datetime', original);
+//       el.innerText = display;
+//     }
+//   });
+// });
