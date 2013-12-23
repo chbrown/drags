@@ -34,8 +34,8 @@ var Preloader = (function() {
 
   var templates = {
     video: function(c) {
-      return '<video width="640" height="360" id="' + c.id + '" style="display: none" autobuffer preload="auto">' +
-        '<source type="video/mp4" src="' + c.url + '">' +
+      return '<video id="' + c.id + '" style="display: none" autobuffer preload="auto">' +
+        '<source src="' + c.url + '">' +
       '</video>';
     },
     audio: function(c) {
@@ -72,7 +72,7 @@ var Preloader = (function() {
   }
 
   function guessType(url) {
-    if (url.match(/\.(mp4|m4v)$/)) {
+    if (url.match(/\.(mp4|m4v|mpg|webm)$/)) {
       return 'video';
     }
     else if (url.match(/\.(mp3|wav)$/)) {
