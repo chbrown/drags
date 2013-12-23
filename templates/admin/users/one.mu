@@ -31,7 +31,7 @@
     </tr>
     {{#responses}}
     <tr>
-      <td><time>{{created}}</time></td>
+      <td><time datetime="{{created.toISOString()}}">{{created}}</time></td>
       <td>{{stimulus_id}}</td>
       <td>{{value}}</td>
       <td>{{details}}</td>
