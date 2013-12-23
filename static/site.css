@@ -14,6 +14,7 @@ ul li{padding:.5ex 0}
 .nowrap{white-space:nowrap}
 .admin{padding:20px 5px 5px}
 .admin table.tablesorter td{border-bottom:1px solid #eee}
+.admin time{white-space:nowrap}
 #container{background:#fff;width:720px;margin:0 auto;padding:30px}
 #stage{text-align:center}
 table.stimuli{width:90%;margin:10px auto 20px}
