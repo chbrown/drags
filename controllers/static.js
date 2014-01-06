@@ -1,6 +1,6 @@
 'use strict'; /*jslint es5: true, node: true, indent: 2 */
 var path = require('path');
-var logger = require('../lib/logger');
+var logger = require('loge');
 var send = require('send');
 
 var static_root = path.join(__dirname, '..', 'static');

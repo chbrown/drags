@@ -16,16 +16,15 @@
     "amulet": "*",
     "async": "*",
     "cookies": "git://github.com/chbrown/cookies.git",
-    "fsm": "git://github.com/chbrown/fsm.git",
     "http-enhanced": "*",
+    "loge": "*",
     "mongoose": "*",
     "npm": "*",
     "optimist": "*",
-    "regex-router": "~0.2",
+    "regex-router": "*",
     "send": "*",
     "sv": "*",
-    "underscore": "*",
-    "winston": "*"
+    "underscore": "*"
   },
   "devDependencies": {
     "grunt": "*",

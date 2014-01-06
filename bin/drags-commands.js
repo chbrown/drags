@@ -5,7 +5,7 @@ var cluster = require('cluster');
 var path = require('path');
 
 var lib = require('../lib');
-var logger = require('../lib/logger');
+var logger = require('loge');
 
 exports['server'] = function(argv) {
   /** `server`: Trigger forking cluster + domains code.

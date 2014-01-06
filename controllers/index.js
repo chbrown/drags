@@ -7,7 +7,7 @@ var Cookies = require('cookies');
 var Router = require('regex-router');
 
 var lib = require('../lib');
-var logger = require('../lib/logger');
+var logger = require('loge');
 var models = require('../lib/models');
 
 Cookies.prototype.defaults = function() {

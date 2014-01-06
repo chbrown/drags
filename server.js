@@ -4,7 +4,7 @@ var cluster = require('cluster');
 var domain = require('domain');
 var http = require('http-enhanced');
 
-var logger = require('./lib/logger');
+var logger = require('loge');
 var models = require('./lib/models');
 var root_controller = require('./controllers');
 

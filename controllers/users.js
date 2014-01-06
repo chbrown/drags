@@ -4,8 +4,8 @@ var amulet = require('amulet');
 var url = require('url');
 var querystring = require('querystring');
 var Router = require('regex-router');
+var logger = require('loge');
 
-var logger = require('../lib/logger');
 var models = require('../lib/models');
 
 var R = new Router(function(req, res) {

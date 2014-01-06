@@ -4,8 +4,8 @@ var sv = require('sv');
 var querystring = require('querystring');
 var amulet = require('amulet');
 var Router = require('regex-router');
+var logger = require('loge');
 
-var logger = require('../../lib/logger');
 var models = require('../../lib/models');
 
 // /admin/users/*

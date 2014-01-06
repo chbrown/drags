@@ -4,8 +4,8 @@ var sv = require('sv');
 var url = require('url');
 var Router = require('regex-router');
 var amulet = require('amulet');
+var logger = require('loge');
 
-var logger = require('../../lib/logger');
 var models = require('../../lib/models');
 
 var R = new Router(function(req, res) {

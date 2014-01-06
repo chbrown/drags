@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict'; /*jslint es5: true, node: true, indent: 2 */
 var os = require('os');
-var logger = require('../lib/logger');
+var logger = require('loge');
 
 var opts = require('optimist')
   .usage([
