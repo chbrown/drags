@@ -1,3 +1,4 @@
+/*jslint browser: true */ /*globals $ */
 function EventEmitter() {
   this.events = {};
 }

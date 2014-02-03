@@ -1,10 +1,15 @@
-"use strict"; /*jslint indent: 2 */ /*globals $, _, EventEmitter */
-// prereqs: underscore.js, jquery.js, EventEmitter
+/*jslint browser: true */ /*globals $, EventEmitter */
 var Preloader = (function() {
-  var el = function(tagName, attributes, opts) {
-    /** el: create a new DOM element, using given tag and attributes.
-    1. Appending each of `opts.children` [Node] as child nodes.
-    2. Next, appending `opts.text` String as a text node.
+  var E = function(tagName, attributes, children) {
+    /** E: helper function to create a new DOM element,
+        using given tag and attributes.
+
+    Example usage:
+
+        var video = E('video', {id: 'video_01', style: 'display: none;'})
+
+    1. Appends each of `opts.children` [Node] as child nodes.
+    2. Next, append `opts.text` String as a text node.
     3. Finally, appending it to `opts.parent` Node if provided.
     */
     var element = document.createElement(tagName);
@@ -14,39 +19,64 @@ var Preloader = (function() {
         element.setAttribute(name, attributes[name]);
       }
     }
-    // text is a string
-    if (opts) {
-      if (opts.children) {
-        for (var i = 0, l = opts.children.length; i < l; i++) {
-          element.appendChild(opts.children[i]);
-        }
-      }
-      if (opts.text) {
-        var text_node = document.createTextNode(opts.text);
-        element.appendChild(text_node);
-      }
-      if (opts.parent) {
-        parent.appendChild(element);
+    // children is a list of nodes
+    if (children) {
+      for (var i = 0, l = children.length; i < l; i++) {
+        element.appendChild(children[i]);
       }
     }
     return element;
   };
 
-  var templates = {
-    video: function(c) {
-      return '<video id="' + c.id + '" style="display: none" autobuffer preload="auto">' +
-        '<source src="' + c.url + '">' +
-      '</video>';
-    },
-    audio: function(c) {
-      return '<audio id="' + c.id + '" style="display: none" autobuffer preload="auto">' +
-        '<source src="' + c.url + '">' +
-      '</audio>';
-    },
-    image: function(c) {
-      return '<img id="' + c.id + '" style="display: none" src="' + c.url + '" />';
+  function extend(target, source) {
+    if (target === undefined) target = {};
+    for (var key in source) {
+      if (source.hasOwnProperty(key)) {
+        target[key] = source[key];
+      }
     }
-  };
+    return target;
+  }
+
+  function range(max) {
+    var xs = [];
+    for (var i = 0; i < max; i++) xs.push(i);
+    return xs;
+  }
+
+  function zip(xss) {
+    // e.g., xss = [
+    //   [1, 2, 3],
+    //   [2, 4, 6],
+    //   [1, 4, 8],
+    //   [10, 100, 1000],
+    // ]
+    // -> [1, 2, 1, 10], etc.
+    var lengths = xss.map(function(xs) { return xs.length; });
+    var maxlen = Math.min.apply(null, lengths);
+    return range(maxlen).map(function(i) {
+      return xss.map(function(xs) { return xs[i]; });
+    });
+  }
+
+  function eq(xs) {
+    // xs should be an Array
+    if (xs.every(Array.isArray)) {
+      // (a) && Array.isArray(b)
+      var lengths = xs.map(function(x) { return x.length; });
+      if (eq(lengths)) {
+        return zip(xs).every(eq);
+      }
+      else {
+        return false;
+      }
+    }
+    else {
+      var y = xs[0];
+      return xs.slice(1).every(function(x) { return x == y; });
+    }
+  }
+
 
   function diffs(xs) {
     /** returns a list of length (xs.length - 1), of the deltas between each pair of xs, e.g.:
@@ -83,8 +113,11 @@ var Preloader = (function() {
     }
   }
 
-  var Resource = function(url) {
-    /** new Resource: preloads a url, guessing the type from the url.
+  var Resource = function(type, urls) {
+    /** Resource: responsible for preloading a single resource.
+
+    `type` should be one of 'video', 'audio', or 'image'
+    `urls` should be an array of urls (strings)
 
     Resources do not know about other resources -- they aren't chained.
 
@@ -96,9 +129,11 @@ var Preloader = (function() {
         when this is emitted, resource.complete will be true.
     */
     EventEmitter.call(this);
-    this.url = url;
-    this.id = url.replace(/\W/g, '');
-    this.type = guessType(url); // one of 'video', 'audio', or 'image'
+    this.type = type;
+    if (!Array.isArray(urls)) {
+      this.urls = [urls];
+    }
+    this.urls = urls;
     this.$element = null;
     this.complete = false;
   };
@@ -117,14 +152,35 @@ var Preloader = (function() {
       this.$element = null;
     }
   };
+  Resource.prototype.createElement = function() {
+    if (this.type == 'video' || this.type == 'audio') {
+      var sources = this.urls.map(function(url) {
+        return E('source', {src: url});
+      });
+      return E(this.type, {style: 'display: none', autobuffer: '', preload: 'auto'}, sources);
+    }
+    else if (this.type == 'image') {
+      var imgs = this.urls.map(function(url) {
+        return E('img', {src: url});
+      });
+      return E('div', {style: 'display: none'}, imgs);
+    }
+    else {
+      var type_node = document.createTextNode(this.type);
+      return E('span', {style: 'display: none'}, type_node);
+    }
+  };
   Resource.prototype.insert = function(container, rush) {
+    /**
+    container: DOM Element
+    rush: play as soon as we think we can manage it
+    */
     var self = this;
-    var ctx = {url: this.url, id: this.id};
-    var html = templates[this.type](ctx);
+    var element = this.createElement();
+    // this.type = guessType(url); // one of 'video', 'audio', or 'image'
 
-    // attach the element so we can detach it later in abort if needed
-    this.$element = $(html).appendTo(container);
-    var media = this.$element[0];
+    // keep track of the element in the resource so we can detach it later in abort if needed
+    this.$element = $(element).appendTo(container);
     var started = time();
 
     var done = function(err) {
@@ -145,7 +201,7 @@ var Preloader = (function() {
         // type: 'ElementError'
         return done(new Error('Resource aborted, element removed.'));
       }
-      if (!media) {
+      if (!element) {
         // type: 'MediaError'
         return done(new Error('Media cannot be found for the url.'));
       }
@@ -154,19 +210,19 @@ var Preloader = (function() {
       var completed = 0;
 
       if (self.type == 'image') {
-        if (media.complete) {
+        if (element.complete) {
           completed = 1.0;
         }
       }
       else {
-        if (media.buffered && media.buffered.length > 0) {
-          buffered_length = media.buffered.end(0);
+        if (element.buffered && element.buffered.length > 0) {
+          buffered_length = element.buffered.end(0);
         }
         buffered_record.push(buffered_length);
 
-        // media.duration might be NaN, probably when it hasn't loaded yet
-        if (!isNaN(media.duration)) {
-          completed = buffered_length / media.duration;
+        // element.duration might be NaN, probably when it hasn't loaded yet
+        if (!isNaN(element.duration)) {
+          completed = buffered_length / element.duration;
         }
       }
 
@@ -239,7 +295,7 @@ var Preloader = (function() {
     this.resources = [];
 
     // set option defaults
-    var opts = _.extend({}, Preloader.defaults, options);
+    var opts = extend(extend({}, Preloader.defaults), options);
     // container may be null, but the default won't be created until one is needed
     this.container = opts.container;
     this.logger = opts.logger;
@@ -265,7 +321,8 @@ var Preloader = (function() {
   Preloader.prototype.getContainer = function() {
     if (this.container === undefined) {
       // if no container is provided, create new node at the end of the document to hold the elements.
-      this.container = el('div', {style: "display: none"}, {parent: document.body});
+      this.container = E('div', {style: "display: none"});
+      document.body.appendChild(this.container);
     }
     return this.container;
   };
@@ -278,23 +335,21 @@ var Preloader = (function() {
     }
     this.container = container;
   };
-  Preloader.prototype.add = function(url1 /*, url2, ...*/) {
+  Preloader.prototype.addResource = function(type, urls) {
     // each url, on loading, will be stuck in the dom, in a hidden div.
     // keyed by their santized urls as element ids, i.e. url.replace(/\W/g, '')
-    var urls = Array.prototype.slice.call(arguments, 0);
-    this.logger.debug('Preloader.add: adding', urls.length, 'urls:', urls);
-    for (var i = 0, l = urls.length; i < l; i++) {
-      var url = urls[i];
-      if (!this.findResource(url)) {
-        this.resources.push(new Resource(url));
-      }
+    // var urls = Array.prototype.slice.call(arguments, 0);
+    this.logger.debug('Preloader.createResource: adding', type, 'urls:', urls);
+    if (!this.findResource(type, urls)) {
+      this.resources.push(new Resource(type, urls));
     }
     this.loop();
   };
-  Preloader.prototype.findResource = function(url) {
+  Preloader.prototype.findResource = function(type, urls) {
     for (var i = 0, l = this.resources.length; i < l; i++) {
-      if (this.resources[i].url == url) {
-        return this.resources[i];
+      var resource = this.resources[i];
+      if (resource.type == type && eq([resource.urls, urls])) {
+        return resource;
       }
     }
   };
@@ -341,33 +396,53 @@ var Preloader = (function() {
     }
 
     if (current_resource.$element) {
-      this.logger.debug('Preloader.loop (in-progress: ' + current_resource.url + ')');
+      this.logger.debug('Preloader.loop (in-progress: ' + current_resource.urls + ')');
     }
     else {
       var self = this;
       current_resource.insert(this.getContainer(), false);
-      this.logger.debug('Preloader.loop (inserted: ' + current_resource.url + ')');
+      this.logger.debug('Preloader.loop (inserted: ' + current_resource.urls + ')');
       current_resource.ready(function(err) {
         if (err) self.logger.error('Resource error: ' + err.toString());
         self.loop();
       });
     }
   };
-  Preloader.prototype.load = function(url, callback) {
+  Preloader.prototype.load = function(type, urls, opts, callback) {
     /** preloader.load(): look for the resource with the given url in the
     existing resources, or add it if it does not already exist.
 
-    Does not abort any other resource load that might be going on.
+    `type`: String
+    `urls`: [String]
+    `opts`: Object
+        `rush`: Boolean
+            If `rush` is true, abort the current loading resource if it isn't the one we want
 
-    `url`: String
     `callback`: function(Error | null, jQuery element | null)
     */
-    this.logger.debug('Preloader.load: url=', url);
-    var resource = this.findResource(url);
-    var self = this;
+    if (callback === undefined && typeof(opts) === 'function') {
+      callback = opts;
+      opts = undefined;
+    }
+
+    if (opts === undefined) opts = {};
+    if (opts.rush === undefined) opts.rush = false;
+
+    this.logger.debug('Preloader.load: type=' + type + ' urls=[' + urls.join(',') + ']');
+    var resource = this.findResource(type, urls);
+
+    if (opts.rush) {
+      var current_resource = this.currentResource();
+      this.pause();
+      // only abort it current one if it's the one we want
+      if (current_resource && current_resource != resource) {
+        current_resource.abort();
+      }
+    }
 
     if (!resource) {
-      resource = new Resource(url);
+      // add it if it wasn't found
+      resource = new Resource(type, urls);
       this.resources.push(resource);
     }
 
@@ -375,8 +450,11 @@ var Preloader = (function() {
       // rush: true
       resource.insert(this.getContainer(), true);
     }
+
+    var self = this;
     resource.ready(function(err) {
       if (err) self.logger.error('Resource error: ' + err);
+
       callback(err, resource.$element);
     });
     return resource;
