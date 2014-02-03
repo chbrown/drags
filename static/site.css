@@ -1,5 +1,5 @@
 *{box-sizing:border-box}
-body{font-family:Arial,Verdana;font-size:12px}
+body{font-family:Arial,Verdana;font-size:12px;margin:0;padding:0}
 a{color:#2d3a51}
 a:hover{color:#2b578a}
 nav{position:fixed;top:0;left:0;background-color:#FDFDFD;padding:0 2px;width:100%;border-bottom:1px solid #CCC}
@@ -15,7 +15,7 @@ ul li{padding:.5ex 0}
 .admin{padding:20px 5px 5px}
 .admin table.tablesorter td{border-bottom:1px solid #eee}
 .admin time{white-space:nowrap}
-#container{background:#fff;width:720px;margin:0 auto;padding:30px}
+#container{background:#fff;width:720px;margin:10px auto}
 #stage{text-align:center}
 table.stimuli{width:90%;margin:10px auto 20px}
 table.stimuli td{text-align:center;vertical-align:middle;width:33%}
