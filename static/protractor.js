@@ -1,5 +1,11 @@
-"use strict"; /*jslint indent: 2 */ /*globals jQuery, window, console */
+/*jslint browser: true */ /*globals jQuery, window, console */
 (function(exports) {
+  function offset(el) {
+    // maybe hack in jQuery global since $.fn.offset is kind of handy?
+    var el_offset = {left: el.offsetLeft, top: el.offsetTop}; // $(el).offset()
+    return el_offset;
+  }
+
   function rotateTo(el, a, b) {
     var dx = b.x - a.x;
     var dy = b.y - a.y;
@@ -26,7 +32,7 @@
     var el = document.createElement('div');
     el.style.backgroundColor = 'black';
     el.style.position = 'absolute';
-    el.style.width = '1px';
+    el.style.width = '1.5pt'; // pixel widths disappear when zoomed out
     el.style.position = 'absolute';
     el.style.transformOrigin = '0% 0%';
     el.style['-webkit-transform-origin'] = '0% 0%';
@@ -59,8 +65,7 @@
     this.opts.onclick(this.vector);
   };
   Protractor.prototype.onmousemove = function(ev) {
-    // hack in jQuery global since $.fn.offset is kind of handy
-    var origin = $(this.container).offset();
+    var origin = offset(this.container);
     var cursor = {
       x: ev.pageX - origin.left,
       y: ev.pageY - origin.top
@@ -68,6 +73,8 @@
     this.vector = rotateTo(this.line, this.opts.center, cursor);
   };
 })(window);
+
+// also add as jQuery plugin
 
 (function($) {
   $.fn.protractor = function(options) {
