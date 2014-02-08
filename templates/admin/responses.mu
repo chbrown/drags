@@ -5,19 +5,25 @@
   <a href="/admin/results.csv?view">View CSV</a>
 </section>
 
-<h2>{{responses.length}} responses from the {{users.length}} most recently created users</h2>
+<h2>{{responses.length}} most recent responses</h2>
 <table class="tablesorter">
   <tr>
-    <th>User ID</th>
-    <th>Stimulus ID</th>
+    <th>Response</th>
+    <th>User</th>
+    <th>Experiment</th>
+    <th>Stimulus</th>
     <th>Value</th>
+    <th>Details</th>
     <th>Created</th>
   </tr>
   {{#responses}}
   <tr>
+    <td>{{id}}</td>
     <td><a href="/admin/users/{{user_id}}">{{user_id}}</a></td>
+    <td>{{experiment_id}}</td>
     <td>{{stimulus_id}}</td>
     <td>{{value}}</td>
+    <td>{{{JSON.stringify(details)}}}</td>
     <td><time>{{created}}</time></td>
   </tr>
   {{/}}

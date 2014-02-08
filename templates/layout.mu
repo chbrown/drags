@@ -20,6 +20,9 @@
     accepts: 'application/json',
     processData: false
   });
+  $(function() {
+    $('a[href="' + window.location.pathname + '"]').addClass('active');
+  });
   </script>
 </head>
 <body>

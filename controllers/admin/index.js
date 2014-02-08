@@ -1,4 +1,4 @@
-'use strict'; /*jslint es5: true, node: true, indent: 2 */
+/*jslint node: true */
 var _ = require('underscore');
 var sv = require('sv');
 var url = require('url');
@@ -7,6 +7,7 @@ var amulet = require('amulet');
 var logger = require('loge');
 
 var models = require('../../lib/models');
+var db = require('../../lib/db');
 
 var R = new Router(function(req, res) {
   res.redirect('/admin');
@@ -15,31 +16,16 @@ var R = new Router(function(req, res) {
 R.any(/^\/admin\/users/, require('./users'));
 
 R.get('/admin', function(req, res) {
-  // select 50 most recent non-empty users
-  models.User.findNonEmpty().sort('-created').limit(50).exec(function(err, users) {
-    var responses = [];
-    users.forEach(function(user) {
-      // responses.push.apply(responses, user.responses);
-      user.responses.forEach(function(response) {
-        response.user_id = user._id;
-        responses.push(response);
-      });
-    });
-
-    responses.length = 500;
-    // responses = _.sortBy(responses, 'created');
-    responses.sort(function(l, r) {
-      // return -1 if you want l ... r
-      // return +1 if you want r ... l
-      return (r.created || 0) - (l.created || 0);
-    });
-
+  // select 100 most recent non-empty users
+  var last_100_sql = 'SELECT * FROM responses ORDER BY id DESC LIMIT 100';
+  db.query(last_100_sql, [], function(err, rows) {
+    if (err) throw err;
+    // console.log(rows);
     var ctx = {
       ticket_user: req.user,
-      users: users,
-      responses: responses,
+      responses: rows,
     };
-    amulet.stream(['layout.mu', 'admin/layout.mu', 'admin/results.mu'], ctx).pipe(res);
+    amulet.stream(['layout.mu', 'admin/layout.mu', 'admin/responses.mu'], ctx).pipe(res);
   });
 });
 
@@ -65,7 +51,7 @@ R.get(/^\/admin\/results.csv/, function(req, res) {
     logger.error(err);
   })
   .on('data', function(user) {
-    // we cross multiply user fields (like demographics) across each response in user.responses
+    // we want to cross multiply user fields (like demographics) across each response in user.responses
     // todo: aggregate and clean up user_demographics
     user.responses.forEach(function(response) {
 
@@ -100,11 +86,11 @@ R.get(/^\/admin\/results.csv/, function(req, res) {
 
 module.exports = function(req, res) {
   // handle auth: all non-administrators should be dropped
-  if (!req.user.administrator) {
-    // this return is CRUCIAL!
-    return res.redirect('/users?redirect=' + req.url);
+  if (req.user.administrator) {
+    logger.debug('Authenticated with user: %s', req.user.id);
+    R.route(req, res);
   }
-
-  logger.debug('Authenticated with user: %s', req.user._id);
-  R.route(req, res);
+  else {
+    res.redirect('/users?redirect=' + req.url);
+  }
 };

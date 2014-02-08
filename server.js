@@ -3,9 +3,9 @@
 var cluster = require('cluster');
 var domain = require('domain');
 var http = require('http-enhanced');
-
 var logger = require('loge');
-var models = require('./lib/models');
+
+var db = require('./lib/db');
 var root_controller = require('./controllers');
 
 var server = http.createServer(function(req, res) {
@@ -42,7 +42,7 @@ var server = http.createServer(function(req, res) {
 
 process.on('message', function(argv) {
   logger.level = argv.verbose ? 'debug' : 'info';
-  models.connect(argv.database);
+  db.set({database: argv.database});
   root_controller.loadSurveys(argv.surveys, function(err) {
     if (err) {
       logger.error('Error loading surveys', err);

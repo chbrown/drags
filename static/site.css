@@ -2,10 +2,12 @@
 body{font-family:Arial,Verdana;font-size:12px;margin:0;padding:0}
 a{color:#2d3a51}
 a:hover{color:#2b578a}
+section{margin:10px auto}
 nav{position:fixed;top:0;left:0;background-color:#FDFDFD;padding:0 2px;width:100%;border-bottom:1px solid #CCC}
 nav a,nav span{display:inline-block;padding:2px 6px;margin:2px;background-color:#fff;border-radius:2px;border:1px solid transparent}
 nav a{border:1px solid #999}
 nav a:hover{background-color:#F7F7F7}
+nav a.active{background-color:#F5F5F5}
 button{margin:0}
 table{border-collapse:collapse}
 table th{text-align:left}
@@ -32,8 +34,5 @@ form>div[id]{margin:10px 0}
 form label{display:block}
 form label span:first-child{font-weight:700}
 form label input[type=checkbox],form label input[type=radio]{margin:4px 2px 5px}
-.flag{position:absolute;background-color:#000;border-radius:4px;padding:3px;color:#fff}
-.flag .triangle{display:inline-block;position:absolute;border:6px solid transparent;width:0;height:0}
-.flag .subflag{display:inline-block}
-.flag .subflag a,.flag .subflag span{display:inline-block;padding:0 4px}
-.flag .subflag a{background-color:#fff;border-radius:2px}
+.flag{position:absolute;background-color:#000;border-radius:3px;padding:2px 6px;color:#fff}
+.flag .triangle{position:absolute;border:6px solid transparent}

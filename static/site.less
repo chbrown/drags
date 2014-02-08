@@ -13,6 +13,9 @@ a {
     color: #2b578a;
   }
 }
+section {
+  margin: 10px auto;
+}
 nav {
   position: fixed;
   top: 0;
@@ -34,6 +37,9 @@ nav {
     &:hover {
       background-color: #F7F7F7;
     }
+    &.active {
+      background-color: #F5F5F5;
+    }
   }
 }
 button {
@@ -48,10 +54,8 @@ table {
     padding: 2px 4px;
   }
 }
-ul {
-  li {
-    padding: .5ex 0;
-  }
+ul li {
+  padding: .5ex 0;
 }
 
 .nowrap {
@@ -98,15 +102,6 @@ table.stimuli_choice {
   }
 }
 
-// #debug {
-//   position: fixed;
-//   top: 0;
-//   left: 0;
-//   padding: 2px 4px;
-//   font-size: 80%;
-//   font-variant: small-caps;
-// }
-
 .progress-bar {
   border: 1px solid black;
   height: 10px;
@@ -151,26 +146,11 @@ form {
 .flag {
   position: absolute;
   background-color: black;
-  border-radius: 4px;
-  padding: 3px;
+  border-radius: 3px;
+  padding: 2px 6px;
   color: white;
-  // like a diamond -- half-diameter measure
   .triangle {
-    display: inline-block;
     position: absolute;
     border: 6px solid transparent;
-    width: 0;
-    height: 0;
-  }
-  .subflag {
-    display: inline-block;
-    span, a {
-      display: inline-block;
-      padding: 0 4px;
-    }
-    a {
-      background-color: white;
-      border-radius: 2px;
-    }
   }
 }

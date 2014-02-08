@@ -1,4 +1,4 @@
-'use strict'; /*jslint es5: true, node: true, indent: 2 */
+/*jslint node: true */
 var path = require('path');
 var async = require('async');
 
@@ -45,8 +45,8 @@ var handler = function(req, res) {
     if (err) return res.die('User.fromTicket error: ' + err);
 
     req.user = user;
-    if (user.primaryTicket() !== current_ticket) {
-      req.cookies.set('ticket', user.primaryTicket());
+    if (user.ticket !== current_ticket) {
+      req.cookies.set('ticket', user.ticket);
     }
 
     R.route(req, res);
@@ -89,4 +89,5 @@ handler.loadSurveys = function(surveys, callback) {
   });
 };
 
+// module.exports = R.route.bind(R);
 module.exports = handler;

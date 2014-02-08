@@ -22,8 +22,8 @@
       el.style[prefix + 'transform'] = 'rotate(' + radians + 'rad)';
     });
 
-    // radians are measured from the bottom, positive going clockwise.
-    //   we add 180, so that we are starting from the top
+    // atan2 gives us radians measured from the bottom, positive clockwise.
+    //   we add 180, so that we are starting from the top (thus, 12:00 is 0 deg, 3:00 is 90, etc.)
     var degrees = (radians * 180.0 / Math.PI) + 180;
     return { radians: radians, degrees: degrees, length: length };
   }
@@ -53,7 +53,7 @@
     this.opts = options;
 
     this.line = createLine();
-    this.vector = {angle: 0, length: -1};
+    this.vector = {};
 
     container.appendChild(this.line);
     container.addEventListener('click', this.onclick.bind(this));

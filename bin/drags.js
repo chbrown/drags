@@ -14,7 +14,7 @@ var opts = require('optimist')
     forks: 'maximum number of workers to spawn',
     host: 'hostname to listen on',
     port: 'port to listen on',
-    database: 'mongodb database to use',
+    database: 'database to use',
 
     help: 'print this help message',
     verbose: 'print extra output',
