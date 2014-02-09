@@ -35,12 +35,17 @@
   },
   "staticPattern": "static/lib/{file}",
   "staticDependencies": {
-    "json2": "*",
-    "underscore": "*",
-    "jquery": "*",
+    "angular": "*",
     "backbone": "*",
     "handlebars": "*",
+    "jquery": "*",
+    "json2": "*",
+    "misc-js": "git://github.com/chbrown/misc-js.git",
     "moment": "*",
-    "misc-js": "git://github.com/chbrown/misc-js.git"
+    "ngStorage": {
+      "url": "git://github.com/gsklee/ngStorage.git",
+      "filter": ["ngStorage.js", "ngStorage.min.js"]
+    },
+    "underscore": "*"
   }
 }

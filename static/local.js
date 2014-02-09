@@ -1,4 +1,4 @@
-/*jslint browser: true */ /*globals $ */
+/*jslint browser: true */
 function EventEmitter() {
   this.events = {};
 }
@@ -72,50 +72,41 @@ function time() {
   return (new Date()).getTime();
 }
 
-$.fn.objectifyForm = function() {
-  var form = {};
-  this.children('div[id]').each(function() {
-    var $field = $(this);
-    var value = [];
-    var force_list = false;
+if (typeof($) !== 'undefined') {
+  $.fn.objectifyForm = function() {
+    var form = {};
+    this.children('div[id]').each(function() {
+      var $field = $(this);
+      var value = [];
+      var force_list = false;
 
-    $field.find('input[type="text"]').each(function(i, el) {
-      value.push(el.value);
+      $field.find('input[type="text"]').each(function(i, el) {
+        value.push(el.value);
+      });
+      $field.find('input[type="password"]').each(function(i, el) {
+        value.push(el.value);
+      });
+      if ($field.find('input[type="checkbox"]').length > 1) {
+        force_list = true;
+      }
+
+      // for each checkbox/radiobutton get the id, find the label[for=<that-id>].innerText, use that as value
+      $field.find('input[type="checkbox"]:checked').each(function(i, el) {
+        value.push($(el).parent('label').text().trim());
+      });
+      $field.find('input[type="radio"]:checked').each(function(i, el) {
+        value.push($(el).parent('label').text().trim());
+      });
+
+      if (value.length === 0) {
+        value = null;
+      }
+      else if (value.length === 1 && !force_list) {
+        value = value[0];
+      }
+
+      form[this.id] = value;
     });
-    $field.find('input[type="password"]').each(function(i, el) {
-      value.push(el.value);
-    });
-    if ($field.find('input[type="checkbox"]').length > 1) {
-      force_list = true;
-    }
-
-    // for each checkbox/radiobutton get the id, find the label[for=<that-id>].innerText, use that as value
-    $field.find('input[type="checkbox"]:checked').each(function(i, el) {
-      value.push($(el).parent('label').text().trim());
-    });
-    $field.find('input[type="radio"]:checked').each(function(i, el) {
-      value.push($(el).parent('label').text().trim());
-    });
-
-    if (value.length === 0) {
-      value = null;
-    }
-    else if (value.length === 1 && !force_list) {
-      value = value[0];
-    }
-
-    form[this.id] = value;
-  });
-  return form;
-};
-
-// $(function() {
-//   $('time').each(function(i, el) {
-//     var original = el.innerText;
-//     if (original) {
-//       var display = moment(original).format('YYYY-MM-DD h:mm a');
-//       el.setAttribute('datetime', original);
-//       el.innerText = display;
-//     }
-//   });
-// });
+    return form;
+  };
+}

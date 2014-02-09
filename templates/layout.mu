@@ -8,7 +8,6 @@
   <script src="/static/local.js"></script>
   <script>
   // local setup
-  var time = function() { return (new Date()).getTime(); };
   cookies.defaults = function() {
     var expires = new Date(time() + 31*24*60*60*1000); // one month
     return {path: '/', expires: expires};
@@ -19,9 +18,6 @@
     contentType: 'application/json',
     accepts: 'application/json',
     processData: false
-  });
-  $(function() {
-    $('a[href="' + window.location.pathname + '"]').addClass('active');
   });
   </script>
 </head>

@@ -1,34 +1,87 @@
 /*jslint node: true */
 var _ = require('underscore');
+var amulet = require('amulet');
+var async = require('async');
+var logger = require('loge');
+var Router = require('regex-router');
 var sv = require('sv');
 var url = require('url');
-var Router = require('regex-router');
-var amulet = require('amulet');
-var logger = require('loge');
 
-var models = require('../../lib/models');
 var db = require('../../lib/db');
+var models = require('../../lib/models');
 
 var R = new Router(function(req, res) {
-  res.redirect('/admin');
+  res.die(404, 'No resource at: ' + req.url);
 });
 
-R.any(/^\/admin\/users/, require('./users'));
+// R.any(/^\/admin\/users/, require('./users'));
+
+
 
 R.get('/admin', function(req, res) {
-  // select 100 most recent non-empty users
-  var last_100_sql = 'SELECT * FROM responses ORDER BY id DESC LIMIT 100';
-  db.query(last_100_sql, [], function(err, rows) {
-    if (err) throw err;
-    // console.log(rows);
-    var ctx = {
-      ticket_user: req.user,
-      responses: rows,
-    };
-    amulet.stream(['layout.mu', 'admin/layout.mu', 'admin/responses.mu'], ctx).pipe(res);
+  amulet.stream(['admin/layout.mu', 'admin/index.mu'], {ticket_user: req.user}).pipe(res);
+});
+
+var createResponsesQuery = function(url_query) {
+  var select = new db.Select({table: 'responses'});
+  if (url_query.experiment_id) {
+    select = select.where('experiment_id = ?', url_query.experiment_id);
+  }
+  if (url_query.stimulus_id) {
+    select = select.where('stimulus_id = ?', url_query.stimulus_id);
+  }
+  if (url_query.user_id) {
+    select = select.where('user_id = ?', url_query.user_id);
+  }
+  return select;
+};
+
+R.get(/^\/admin\/responses/, function(req, res) {
+  var urlObj = url.parse(req.url, true);
+  var select = createResponsesQuery(urlObj.query);
+  // select =
+  select.orderBy('id DESC').limit(100).execute(function(err, rows) {
+    if (err) return res.die('Database select error: ' + err.toString());
+
+    select.addColumns('COUNT(id)').execute(function(err, count_rows) {
+      res.json({
+        total: count_rows[0].count,
+        rows: rows,
+      });
+    });
   });
 });
 
+R.get(/^\/admin\/filters/, function(req, res) {
+  var urlObj = url.parse(req.url, true);
+  var select = createResponsesQuery(urlObj.query);
+
+  async.parallel([
+    function(callback) {
+      // get user_ids
+      var colselect = select.addColumns('DISTINCT user_id AS id');
+      colselect.execute(callback);
+    },
+    function(callback) {
+      var colselect = select.addColumns('DISTINCT experiment_id AS id');
+      colselect.execute(callback);
+    },
+    function(callback) {
+      var colselect = select.addColumns('DISTINCT stimulus_id AS id');
+      colselect.execute(callback);
+    },
+  ], function(err, results) {
+    if (err) return res.die('/admin/filter query error', err);
+    // console.log('/admin/filter results', results);
+
+    var result = {
+      user_ids: _.pluck(results[0], 'id'),
+      experiment_ids: _.pluck(results[1], 'id'),
+      stimulus_ids: _.pluck(results[2], 'id'),
+    };
+    res.json(result);
+  });
+});
 
 R.get(/^\/admin\/results.csv/, function(req, res) {
   // call with ?view to view the resulting csv as text in the browser
