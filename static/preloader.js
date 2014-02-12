@@ -28,14 +28,26 @@ var Preloader = (function() {
     return element;
   };
 
-  function extend(target, source) {
+  function extend(target /*, sources... */) {
     if (target === undefined) target = {};
-    for (var key in source) {
-      if (source.hasOwnProperty(key)) {
-        target[key] = source[key];
+    // var sources = Array.prototype.slice.call(arguments, 1);
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+      for (var key in source) {
+        if (source.hasOwnProperty(key)) {
+          target[key] = source[key];
+        }
       }
     }
     return target;
+  }
+
+  function list(xs) {
+    // ensure that xs is an Array
+    if (Array.isArray(xs)) {
+      return xs;
+    }
+    return [xs];
   }
 
   function range(max) {
@@ -130,9 +142,6 @@ var Preloader = (function() {
     */
     EventEmitter.call(this);
     this.type = type;
-    if (!Array.isArray(urls)) {
-      this.urls = [urls];
-    }
     this.urls = urls;
     this.$element = null;
     this.complete = false;
@@ -210,8 +219,12 @@ var Preloader = (function() {
       var completed = 0;
 
       if (self.type == 'image') {
-        if (element.complete) {
-          completed = 1.0;
+        // element is a div, containing img's
+        // let's just say that one complete image is enough
+        for (var i = 0; i < element.childNodes.length; i++) {
+          if (element.childNodes[i].complete) {
+            completed = 1.0;
+          }
         }
       }
       else {
@@ -236,7 +249,7 @@ var Preloader = (function() {
       }
       else if (rush) {
         if (elapsed > Preloader.timeouts.rush && last_10_diff_sum < 1 && completed > 0.5) {
-          // sometimes Chrome doesn't feel like loading the whole movie. Okay, fine.
+          // sometimes Chrome doesn't feel like loading the whole video. Okay, fine.
           done();
         }
         else {
@@ -295,15 +308,11 @@ var Preloader = (function() {
     this.resources = [];
 
     // set option defaults
-    var opts = extend(extend({}, Preloader.defaults), options);
+    var opts = extend({}, Preloader.defaults, options);
     // container may be null, but the default won't be created until one is needed
     this.container = opts.container;
     this.logger = opts.logger;
     this.paused = opts.paused;
-
-    if (opts.urls) {
-      this.add.apply(this, opts.urls);
-    }
   };
   Preloader.defaults = {
     logger: new NullLogger(),
@@ -339,6 +348,7 @@ var Preloader = (function() {
     // each url, on loading, will be stuck in the dom, in a hidden div.
     // keyed by their santized urls as element ids, i.e. url.replace(/\W/g, '')
     // var urls = Array.prototype.slice.call(arguments, 0);
+    urls = list(urls);
     this.logger.debug('Preloader.createResource: adding', type, 'urls:', urls);
     if (!this.findResource(type, urls)) {
       this.resources.push(new Resource(type, urls));
@@ -408,30 +418,22 @@ var Preloader = (function() {
       });
     }
   };
-  Preloader.prototype.load = function(type, urls, opts, callback) {
+  Preloader.prototype.load = function(type, urls, rush, callback) {
     /** preloader.load(): look for the resource with the given url in the
     existing resources, or add it if it does not already exist.
 
     `type`: String
     `urls`: [String]
-    `opts`: Object
-        `rush`: Boolean
-            If `rush` is true, abort the current loading resource if it isn't the one we want
-
+    `rush`: Boolean
+        If `rush` is true, abort the current loading resource if it isn't the one we want
     `callback`: function(Error | null, jQuery element | null)
     */
-    if (callback === undefined && typeof(opts) === 'function') {
-      callback = opts;
-      opts = undefined;
-    }
-
-    if (opts === undefined) opts = {};
-    if (opts.rush === undefined) opts.rush = false;
+    urls = list(urls);
 
     this.logger.debug('Preloader.load: type=' + type + ' urls=[' + urls.join(',') + ']');
     var resource = this.findResource(type, urls);
 
-    if (opts.rush) {
+    if (rush) {
       var current_resource = this.currentResource();
       this.pause();
       // only abort it current one if it's the one we want
