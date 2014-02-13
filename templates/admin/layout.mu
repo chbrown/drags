@@ -16,7 +16,7 @@
 <body>
   <nav>
     <a href="/admin">Admin</a>
-    <a href="/admin/users">Users</a>
+    <!-- <a href="/admin/users">Users</a> -->
     <a href="/users/logout" style="float: right">Logout</a>
     <span style="float: right" title="User#{{ticket_user.id}}">Logged in as {{ticket_user.email}}</span>
   </nav>
