@@ -91,6 +91,16 @@ To handle serving static files from various sub-packages, we don't reverse-proxy
 Instead, I'm using visionmedia's [`send`](https://github.com/visionmedia/send) package.
 If that doesn't pan out, we could try [`node-static`](https://github.com/cloudhead/node-static).
 
+## Database setup
+
+If you run `drags` as the user `chbrown`, for example, you would want to create a PostgreSQL role like:
+
+    CREATE ROLE chbrown LOGIN;
+
+And create the database like this:
+
+    CREATE DATABASE drags OWNER chbrown ENCODING 'UTF8';
+
 
 ## License
 
