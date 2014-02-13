@@ -3,7 +3,7 @@ var _ = require('underscore');
 var async = require('async');
 var pg = require('pg');
 
-pg.connect('postgres://localhost/drags', function(err, pg_client, pg_client_done) {
+pg.connect({host: '/tmp', database: 'drags'}, function(err, pg_client, pg_client_done) {
   if (err) throw err;
 
   async.series([

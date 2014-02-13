@@ -234,7 +234,7 @@ function convert_users(mongo_db, pg_client, callback) {
 
 mongodb.MongoClient.connect('mongodb://127.0.0.1:27017/drags', function(err, mongo_db) {
   if (err) throw err;
-  pg.connect('postgres://localhost/drags', function(err, pg_client, pg_client_done) {
+  pg.connect({host: '/tmp', database: 'drags'}, function(err, pg_client, pg_client_done) {
     if (err) throw err;
 
     async.series([
