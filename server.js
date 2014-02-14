@@ -42,7 +42,7 @@ var server = http.createServer(function(req, res) {
 
 process.on('message', function(argv) {
   logger.level = argv.verbose ? 'debug' : 'info';
-  db.set({database: argv.database});
+  // db.set({database: argv.database});
   root_controller.loadSurveys(argv.surveys, function(err) {
     if (err) {
       logger.error('Error loading surveys', err);

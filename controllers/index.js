@@ -20,7 +20,7 @@ var R = new Router(function(req, res) {
 });
 
 // attach controllers
-R.any(/^\/(static|favicon\.ico)/, require('./static'));
+R.any(/^\/(static|templates|favicon\.ico)/, require('./static'));
 R.any(/^\/admin/, require('./admin'));
 R.any(/^\/users/, require('./users'));
 

@@ -14,7 +14,7 @@ var opts = require('optimist')
     forks: 'maximum number of workers to spawn',
     host: 'hostname to listen on',
     port: 'port to listen on',
-    database: 'database to use',
+    // database: 'database to use',
 
     help: 'print this help message',
     verbose: 'print extra output',
@@ -26,7 +26,7 @@ var opts = require('optimist')
     forks: os.cpus().length,
     hostname: '127.0.0.1',
     port: 1301,
-    database: 'drags',
+    // database: 'drags',
   });
 
 var argv = opts.argv;

@@ -25,6 +25,7 @@
     "pg": "*",
     "regex-router": "*",
     "send": "*",
+    "sqlcmd": "*",
     "sv": "*",
     "underscore": "*"
   },

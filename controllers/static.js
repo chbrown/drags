@@ -2,23 +2,38 @@
 var path = require('path');
 var logger = require('loge');
 var send = require('send');
+var Router = require('regex-router');
 
-var static_root = path.join(__dirname, '..', 'static');
+var roots = {
+  static: path.join(__dirname, '..', 'static'),
+  templates: path.join(__dirname, '..', 'templates'),
+};
 
-module.exports = function(req, res) {
-  var path = req.url.slice(8); // since '/static/'.length == 8
-  if (req.url == '/favicon.ico') {
-    path = 'favicon.ico';
-  }
+var R = new Router(function(req, res) {
+  res.die(404, 'Cannot find resource at ' + req.url);
+});
 
-  send(req, path)
-    .root(static_root)
+var serve = function(req, res, root, path) {
+  send(req, path).root(root)
     .on('error', function(err) {
-      logger.info('static.send error', err);
-      res.die(err.status || 500, err.message);
+      res.die(err.status || 500, 'send error: ' + err.message);
     })
     .on('directory', function() {
-      res.die(404, 'Cannot fetch static file: ' + req.url);
+      res.die(404, 'No resource at: ' + req.url);
     })
     .pipe(res);
 };
+
+R.get(/^\/static\/([^?]+)(\?|$)/, function(req, res, m) {
+  serve(req, res, roots.static, m[1]);
+});
+
+R.get(/^\/templates\/([^?]+)(\?|$)/, function(req, res, m) {
+  serve(req, res, roots.templates, m[1]);
+});
+
+R.get('/favicon.ico', function(req, res) {
+  serve(req, res, roots.static, 'favicon.ico');
+});
+
+module.exports = R.route.bind(R);

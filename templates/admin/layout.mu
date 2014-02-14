@@ -20,7 +20,7 @@
     <a href="/users/logout" style="float: right">Logout</a>
     <span style="float: right" title="User#{{ticket_user.id}}">Logged in as {{ticket_user.email}}</span>
   </nav>
-  <div class="admin" ng-app="app">
+  <div ng-app="app" style="padding: 25px 5px 5px">
     {{<}}
   </div>
   <script>
