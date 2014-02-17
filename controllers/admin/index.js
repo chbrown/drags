@@ -28,13 +28,13 @@ R.get('/admin/responses/distinct-ids', function(req, res) {
   var select = new sqlcmd.Select({table: 'responses'}).orderBy('id');
   async.parallel([
     function(callback) {
-      select.addColumns('DISTINCT user_id AS id').execute(db, callback);
+      select.add('DISTINCT user_id AS id').execute(db, callback);
     },
     function(callback) {
-      select.addColumns('DISTINCT experiment_id AS id').execute(db, callback);
+      select.add('DISTINCT experiment_id AS id').execute(db, callback);
     },
     function(callback) {
-      select.addColumns('DISTINCT stimulus_id AS id').execute(db, callback);
+      select.add('DISTINCT stimulus_id AS id').execute(db, callback);
     },
   ], function(err, results) {
     if (err) return res.die('/admin/responses/distinct-ids query error', err);
@@ -52,7 +52,7 @@ R.get(/^\/admin\/responses\/values/, function(req, res) {
   if (!params.stimulus_id) return res.die(400, 'stimulus_id parameter is required');
 
   var select = new sqlcmd.Select({table: 'responses'})
-    .addColumns('DISTINCT value')
+    .add('DISTINCT value')
     .where('stimulus_id = ?', params.stimulus_id)
     .orderBy('value');
 
@@ -77,21 +77,21 @@ R.get(/^\/admin\/responses\/values/, function(req, res) {
 //     function(callback) {
 //       // get user_ids
 //       select
-//         .addColumns('DISTINCT user_id AS id')
+//         .add('DISTINCT user_id AS id')
 //         .whereIf('experiment_id = ?', params.experiment_id)
 //         .whereIf('stimulus_id = ?', params.stimulus_id)
 //         .execute(callback);
 //     },
 //     function(callback) {
 //       select
-//         .addColumns('DISTINCT experiment_id AS id')
+//         .add('DISTINCT experiment_id AS id')
 //         .whereIf('user_id = ?', params.user_id)
 //         .whereIf('stimulus_id = ?', params.stimulus_id)
 //         .execute(callback);
 //     },
 //     function(callback) {
 //       select
-//         .addColumns('DISTINCT stimulus_id AS id')
+//         .add('DISTINCT stimulus_id AS id')
 //         .whereIf('user_id = ?', params.user_id)
 //         .whereIf('experiment_id = ?', params.experiment_id)
 //         .execute(callback);
