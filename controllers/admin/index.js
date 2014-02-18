@@ -183,7 +183,7 @@ var responses_json = function(req, res, select) {
       select.orderBy('id DESC').limit(100).execute(db, callback);
     },
     total: function(callback) {
-      select.addColumns('COUNT(id)').execute(db, function(err, rows) {
+      select.add('COUNT(id)').execute(db, function(err, rows) {
         callback(err, err || rows[0].count);
       });
     }
