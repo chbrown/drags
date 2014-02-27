@@ -1,4 +1,4 @@
-'use strict'; /*jslint es5: true, node: true, indent: 2 */
+/*jslint node: true */
 // this file will be called multiple times for each child worker
 var cluster = require('cluster');
 var domain = require('domain');
