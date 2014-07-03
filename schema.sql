@@ -3,17 +3,15 @@
 CREATE TABLE users (
   id serial PRIMARY KEY,
 
-  user_oid text UNIQUE,
+  -- user_oid text UNIQUE, <-- can remove now, after mongo conversions
   email text,
   password text,
-  administrator boolean
-    DEFAULT false,
+  administrator boolean DEFAULT false,
   ticket text,
   ip text,
   user_agent text,
 
-  created timestamp
-    DEFAULT current_timestamp
+  created TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp
 );
 
 CREATE TABLE clients (
@@ -31,14 +29,13 @@ CREATE TABLE responses (
   id serial PRIMARY KEY,
   user_id integer REFERENCES users(id),
 
-  user_oid text,
+  -- user_oid text, <-- can remove now that conversion is done
   experiment_id text,
   stimulus_id text,
   value text,
   details json,
 
-  created timestamp
-    DEFAULT current_timestamp
+  created TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp
 );
 
 CREATE TABLE tickets (
@@ -49,36 +46,5 @@ CREATE TABLE tickets (
   user_oid text,
   key text UNIQUE,
 
-  created timestamp
-    DEFAULT current_timestamp
+  created TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp
 );
-
-/*
-
-After conversions, pruned to:
-
-CREATE TABLE users (
-  id serial PRIMARY KEY,
-  email text,
-  password text,
-  administrator boolean
-    DEFAULT false,
-  ticket text,
-  ip text,
-  user_agent text,
-  created timestamp
-    DEFAULT current_timestamp
-);
-
-CREATE TABLE responses (
-  id serial PRIMARY KEY,
-  user_id integer REFERENCES users(id),
-  experiment_id text,
-  stimulus_id text,
-  value text,
-  details json,
-  created timestamp
-    DEFAULT current_timestamp
-);
-
-*/

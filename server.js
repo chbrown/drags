@@ -5,6 +5,11 @@ var domain = require('domain');
 var http = require('http-enhanced');
 var logger = require('loge');
 
+var config = require('./package').config;
+process.env.port = process.env.npm_config_port || config.port;
+process.env.hostname = process.env.npm_config_hostname || config.hostname;
+process.env.database = process.env.npm_config_database || config.database;
+
 var db = require('./lib/db');
 var root_controller = require('./controllers');
 
@@ -48,7 +53,7 @@ process.on('message', function(argv) {
       logger.error('Error loading surveys', err);
     }
   });
-  server.listen(argv.port, argv.hostname, function() {
-    logger.info('Listening on %s:%d (pid %d)', argv.hostname, argv.port, process.pid);
+  server.listen(config.port, config.hostname, function() {
+    logger.info('Listening on %s:%d (pid %d)', config.hostname, config.port, process.pid);
   });
 });

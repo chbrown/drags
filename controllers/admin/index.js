@@ -5,7 +5,6 @@ var async = require('async');
 var logger = require('loge');
 var Router = require('regex-router');
 var sv = require('sv');
-var sqlcmd = require('sqlcmd');
 var url = require('url');
 
 var db = require('../../lib/db');
@@ -25,16 +24,16 @@ R.get('/admin', function(req, res) {
 });
 
 R.get('/admin/responses/distinct-ids', function(req, res) {
-  var select = new sqlcmd.Select({table: 'responses'}).orderBy('id');
+  var select = db.Select('responses').orderBy('id');
   async.parallel([
     function(callback) {
-      select.add('DISTINCT user_id AS id').execute(db, callback);
+      select.add('DISTINCT user_id AS id').execute(callback);
     },
     function(callback) {
-      select.add('DISTINCT experiment_id AS id').execute(db, callback);
+      select.add('DISTINCT experiment_id AS id').execute(callback);
     },
     function(callback) {
-      select.add('DISTINCT stimulus_id AS id').execute(db, callback);
+      select.add('DISTINCT stimulus_id AS id').execute(callback);
     },
   ], function(err, results) {
     if (err) return res.die('/admin/responses/distinct-ids query error', err);
@@ -51,12 +50,12 @@ R.get(/^\/admin\/responses\/values/, function(req, res) {
   var params = url.parse(req.url, true).query;
   if (!params.stimulus_id) return res.die(400, 'stimulus_id parameter is required');
 
-  var select = new sqlcmd.Select({table: 'responses'})
+  var select = db.Select({table: 'responses'})
     .add('DISTINCT value')
     .where('stimulus_id = ?', params.stimulus_id)
     .orderBy('value');
 
-  select.execute(db, function(err, rows) {
+  select.execute(function(err, rows) {
     if (err) return res.die('/admin/responses/values query error', err);
     var result = {
       values: _.pluck(rows, 'value'),
@@ -67,7 +66,7 @@ R.get(/^\/admin\/responses\/values/, function(req, res) {
 
 // R.get(/^\/admin\/incremental-filters/, function(req, res) {
 //   var urlObj = url.parse(req.url, true);
-//   var select = new sqlcmd.Select({table: 'responses'});
+//   var select = new db.Select('responses');
 //   var params = urlObj.query;
 //   // var select = createResponsesQuery(urlObj.query);
 
@@ -109,7 +108,7 @@ R.get(/^\/admin\/responses\/values/, function(req, res) {
 // });
 
 var format_date = function(date) {
-  return date.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+  return date.toISOString().replace(/T/, ' ').replace(/Z/, '');
 };
 
 var responses_csv = function(req, res, select) {
@@ -130,7 +129,7 @@ var responses_csv = function(req, res, select) {
   var now = Date.now();
 
   // maybe use pg-cursor ? https://github.com/brianc/node-pg-cursor
-  select.orderBy('user_id ASC').execute(db, function(err, rows) {
+  select.orderBy('user_id ASC').execute(function(err, rows) {
     if (err) return res.die(500, 'Database error: ' + err.toString());
 
     /** responses table:
@@ -180,10 +179,10 @@ var responses_csv = function(req, res, select) {
 var responses_json = function(req, res, select) {
   async.auto({
     rows: function(callback) {
-      select.orderBy('id DESC').limit(100).execute(db, callback);
+      select.orderBy('id DESC').limit(100).execute(callback);
     },
     total: function(callback) {
-      select.add('COUNT(id)').execute(db, function(err, rows) {
+      select.add('COUNT(id)').execute(function(err, rows) {
         callback(err, err || rows[0].count);
       });
     }
@@ -205,8 +204,8 @@ Optional querystring args:
 R.get(/^\/admin\/responses\.(\w+)/, function(req, res, m) {
   var params = url.parse(req.url, true).query;
 
-  var select = new sqlcmd.Select({table: 'responses'})
-    .whereIf('experiment_id = ?', params.experiment_id);
+  var select = db.Select('responses')
+  .whereEqual({experiment_id: params.experiment_id});
 
   // both stimulus and value have to be given in order to filter by user
   if (params.stimulus_id && params.value) {
