@@ -18,22 +18,15 @@
     "cookies": "git://github.com/chbrown/cookies.git",
     "http-enhanced": "*",
     "loge": "*",
-    "mongodb": "*",
-    "mongoose": "*",
     "npm": "*",
     "optimist": "*",
-    "pg": "*",
     "regex-router": "*",
     "send": "*",
     "sqlcmd": "*",
     "sv": "*",
     "underscore": "*"
   },
-  "devDependencies": {
-    "grunt": "*",
-    "grunt-contrib-uglify": "*",
-    "grunt-contrib-handlebars": "git://github.com/chbrown/grunt-contrib-handlebars.git"
-  },
+  "devDependencies": {},
   "staticPattern": "static/lib/{file}",
   "staticDependencies": {
     "angular": "*",
@@ -43,10 +36,7 @@
     "json2": "*",
     "misc-js": "git://github.com/chbrown/misc-js.git",
     "moment": "*",
-    "ngStorage": {
-      "url": "git://github.com/gsklee/ngStorage.git",
-      "filter": ["ngStorage.js", "ngStorage.min.js"]
-    },
+    "ng-storage": "*",
     "underscore": "*"
   }
 }
