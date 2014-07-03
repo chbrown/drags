@@ -1,5 +1,5 @@
 /*jslint browser: true */
-/** Copyright (c) 2013 Christopher Brown <io@henrian.com>, MIT Licensed
+/** Copyright 2013-2014 Christopher Brown <io@henrian.com>, MIT Licensed
 
 https://raw.github.com/chbrown/misc-js/master/textarea.js
 http://chbrown.github.io/misc-js/textarea.js
@@ -23,6 +23,14 @@ var Textarea = (function() {
       }
     }
     return target;
+  }
+
+  function fill(n, character) {
+    var arr = new Array(n);
+    for (var i = 0; i < n; i++) {
+      arr[i] = character;
+    }
+    return arr.join('');
   }
 
   function copyStyle(source, target) {
@@ -92,6 +100,7 @@ var Textarea = (function() {
     var space = [];
     var match = null;
     var regex = /(^|\n)(\s+)/g;
+    // TODO: ignore totally empty lines
     while ((match = regex.exec(string)) !== null) {
       space.push(parseInt(match[2].length, 10));
     }
@@ -103,7 +112,12 @@ var Textarea = (function() {
   };
 
   var dentSelection = function(textarea, dedent, tab) {
-    /** dentSelection indents if dedent is false
+    /** dentSelection:
+    textarea: DOM Element
+    dedent: indent if false, otherwise, un-indent (usually false)
+    tab: a String, e.g., '  '
+
+    dentSelection is called when the tab key is pressed, after initializing with initTabListener
 
     support this.selectionDirection? I think that'd just entail indexOf instead of lastIndexOf
 
@@ -116,24 +130,23 @@ var Textarea = (function() {
 
     Other test cases:
     1. Select from first line somewhere into document. Should indent all of first line.
-    2. Place cursor at beginning of line (0-width selection) -- should select to end of line.
+    2. Zero-width selections should NOT be expanded.
     3. Triple click some portion (so that the last newline is technically selected) -- should not shift line below.
     4. TODO: dedent by fraction of a tab if, say, the tab is 4 spaces and there are only 2.
 
     */
-
-    // if we have selected all the way to the beginning, we also want to indent the beginning of the string
-    var dedent_pattern = new RegExp('(\n)' + tab, 'g');
-    var indent_pattern = new RegExp('(\n)', 'g');
-
+    var selectionStart = textarea.selectionStart;
+    var selectionEnd = textarea.selectionEnd;
+    var selectionWidth = selectionEnd - selectionStart;
     // for begin, start at `selectionStart - 1` so that we don't catch the newline that the cursor is currently on
-    var begin = textarea.value.lastIndexOf('\n', textarea.selectionStart - 1);
+    var begin = textarea.value.lastIndexOf('\n', selectionStart - 1);
     // 0-width selections get special handling in case the cursor is sitting at the front of the line
-    var selectionWidth = textarea.selectionEnd - textarea.selectionStart;
-    var end = textarea.value.indexOf('\n', textarea.selectionEnd - (selectionWidth === 0 ? 0 : 1));
+    var end = textarea.value.indexOf('\n', selectionEnd - (selectionWidth === 0 ? 0 : 1));
 
     // shrink/expand to their respective ends of the documents if no newline was found
-    if (begin == -1) begin = 0;
+    if (begin == -1) {
+      begin = 0;
+    }
     if (end == -1) {
       end = textarea.value.length;
     }
@@ -143,26 +156,73 @@ var Textarea = (function() {
     var middle = textarea.value.slice(begin, end);
     var after = textarea.value.slice(end);
 
-    // begin = 0 is special and I can't figure out a way to make regex multiline play nice
-    if (begin === 0) {
-      dedent_pattern = new RegExp('(^|\n)' + tab, 'g');
-      indent_pattern = new RegExp('(^|\n)', 'g');
-    }
-
     if (dedent) {
-      // dedent
+      // if we have selected all the way to the beginning, we also want to indent the beginning of the string
+      //   begin = 0 is special and I can't figure out a way to make regex multiline play nice
+      var dedent_pattern = new RegExp((begin === 0) ? '(^|\n)' + tab : '(\n)' + tab, 'g');
+      // removing a tab
       middle = middle.replace(dedent_pattern, '$1');
-      textarea.value = before + middle + after;
+    }
+    else {
+      var indent_pattern = new RegExp((begin === 0) ? '(^|\n)' : '(\n)', 'g');
+      // indenting a tab
+      middle = middle.replace(indent_pattern, '$1' + tab);
+    }
+    // modification complete, push changes to dom and set selection
+    textarea.value = before + middle + after;
+    if (selectionWidth === 0) {
+      // TODO: don't move the cursor unless the tab was effective
+      var selectionIndex = selectionStart + (dedent ? -tab.length : tab.length);
+      textarea.setSelectionRange(selectionIndex, selectionIndex);
+    }
+    else {
       // again, special handling for begin = 0
       textarea.setSelectionRange(begin === 0 ? 0 : begin + 1, begin + middle.length);
     }
-    else {
-      // indent
-      middle = middle.replace(indent_pattern, '$1' + tab);
-      textarea.value = before + middle + after;
-      textarea.setSelectionRange(begin === 0 ? 0 : begin + 1, begin + middle.length);
-    }
   };
+
+  var autoindentNewline = function(textarea, jump) {
+    /**
+    We have just started a newline. Indent to where the previous one ended.
+
+    If jump is true (when command is held), do not cut the current line,
+    but instead act as if we were at the end of line when we pressed return.
+
+    Should always be 0-width selection
+    */
+    var value = textarea.value;
+    var selectionStart = textarea.selectionStart;
+    if (jump) {
+      var end_of_line = value.indexOf('\n', selectionStart - 1);
+      if (end_of_line > -1) {
+        selectionStart = end_of_line;
+      }
+    }
+    var beginning_of_previous_line = value.lastIndexOf('\n', selectionStart - 1) + 1;
+    // if (beginning_of_line > -1) {
+    var previous_indent = value.slice(beginning_of_previous_line).match(/^[ \t]+/);
+    if (previous_indent) {
+      // need to make sure max out beginning_of_previous_line + previous_indent
+      // at selectionStart
+      // for example, select the middle of some whitespace and press enter
+      var before = textarea.value.slice(0, selectionStart);
+      var after = textarea.value.slice(selectionStart);
+      // add the newline because we prevented default already
+      // should replace selection if we do not have a 0-width selection
+      var insert = '\n' + previous_indent[0];
+      textarea.value = before + insert + after;
+      var cursor = selectionStart + insert.length;
+      textarea.setSelectionRange(cursor, cursor);
+      return true;
+    }
+    // don't do anything if there is no existing indent
+    // don't do anything special on the very first line of the document
+    // trigger resizeToFit?
+  };
+
+  // setInterval(function() {
+  //   log('textarea.selectionStart', (window.textarea || {}).selectionStart);
+  // }, 1000);
 
   var Textarea = function(el, opts) {
     /** Textarea: tab and autoresize support
@@ -175,6 +235,8 @@ var Textarea = (function() {
             pixels to add to the height when a positive resize is necessary, defaults to 0
         autodedent: Boolean
             if true, dedent the original text as much as possible
+        poll: Number
+            interval between checking if the contents have changed, resizing if needed
     */
     this.opts = extend({}, {
       tab: '  ',
@@ -189,7 +251,20 @@ var Textarea = (function() {
     }
 
     this.initTabListener();
+    this.initReturnListener();
     this.initResizeToFit();
+    // todo:
+    //   'command+{' -> dedent
+    //   'command+}' -> indent
+    //   newline after opening tag / -- autoindent + normal tab
+    //   'command+option+.' -> closing currently open tag
+    //   fix problem with command+newline on lines without a previous indented line
+    //   'command+left' (home) -> jump to beginning of line, after whitespace
+    //   trim trailing white space ?
+
+    if (this.opts.poll) {
+      this.initValuePoll(this.opts.poll);
+    }
   };
 
   Textarea.prototype.initTabListener = function() {
@@ -207,7 +282,35 @@ var Textarea = (function() {
         dentSelection(this, ev.shiftKey, tab);
       }
     }, false);
+  };
 
+  Textarea.prototype.initReturnListener = function() {
+    /**
+    10 = newline (\n)
+    13 = carriage return (\r)
+    */
+    var tab = this.opts.tab;
+    this.el.addEventListener('keydown', function(ev) {
+      if (ev.which == 13) {
+        var handled = autoindentNewline(this, ev.metaKey);
+        if (handled) {
+          ev.preventDefault(); // we've put it in ourselves
+        }
+      }
+    }, false);
+  };
+
+  Textarea.prototype.initValuePoll = function(interval) {
+    var self = this;
+    // for a hash value -- just use the length
+    var last_value_hash = this.el.value.length;
+    setInterval(function() {
+      var current_value_hash = self.el.value.length;
+      if (current_value_hash != last_value_hash) {
+        self.resizeToFit();
+        last_value_hash = current_value_hash;
+      }
+    }, interval);
   };
 
   Textarea.prototype.initResizeToFit = function() {
@@ -240,11 +343,13 @@ var Textarea = (function() {
     var resizeToFit = this.resizeToFit.bind(this);
     // https://developer.mozilla.org/en-US/docs/Web/Reference/Events
     window.addEventListener('resize', resizeToFit, false);
+    document.addEventListener('readystatechange', resizeToFit, false);
     this.el.addEventListener('blur', resizeToFit, false);
     this.el.addEventListener('keyup', resizeToFit, false);
     this.el.addEventListener('change', resizeToFit, false);
     this.el.addEventListener('cut', resizeToFit, false);
     this.el.addEventListener('paste', resizeToFit, false);
+    this.el.addEventListener('input', resizeToFit, false);
     // maybe use https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver
     // in the future once it's more widely supported
     // but for now, maybe poll the shadow div for changed height? (ewww, I know, polling)
@@ -263,6 +368,10 @@ var Textarea = (function() {
     var html = escapeHTML(this.el.value);
     // add extra white space to make sure the last line is rendered
     this.shadow.innerHTML = html + '&nbsp;';
+    // todo: too-long lines with only trailing space won't trigger a newline
+    // until you hit a visible character, which triggers an ugly shift of the
+    // text to the right as the box tries to fit a full space character into
+    // whatever space is left on that line.
 
     // element sizing, from quirskmode:
     // clientWidth and clientHeight (read/write):
@@ -282,6 +391,9 @@ var Textarea = (function() {
     // the shadow div should now have resized to match the contents of the textarea, so we measure it
     var shadow_style = window.getComputedStyle(this.shadow);
     var shadow_height = shadow_style.height;
+
+    // todo: if the user disables auto-expanding with max-height, make sure the shadow
+    // does not take up too much space
 
     if (!isNaN(max_height) && shadow_style.height > max_height) {
       this.el.style.overflow = 'auto';
