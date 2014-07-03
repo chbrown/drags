@@ -6,7 +6,7 @@
   "keywords": ["drags", "surveys"],
   "homepage": "https://github.com/chbrown/drags",
   "bin": {
-    "drags": "bin/drags.js"
+    "drags": "bin/drags"
   },
   "repository": {
     "type": "git",
@@ -38,5 +38,10 @@
     "moment": "*",
     "ng-storage": "*",
     "underscore": "*"
+  },
+  "config": {
+    "hostname": "127.0.0.1",
+    "port": 1301,
+    "database": "drags"
   }
 }

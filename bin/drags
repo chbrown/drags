@@ -12,9 +12,6 @@ var opts = require('optimist')
   .describe({
     surveys: 'directory containing surveys',
     forks: 'maximum number of workers to spawn',
-    host: 'hostname to listen on',
-    port: 'port to listen on',
-    // database: 'database to use',
 
     help: 'print this help message',
     verbose: 'print extra output',
@@ -25,7 +22,6 @@ var opts = require('optimist')
   .default({
     forks: os.cpus().length,
     hostname: '127.0.0.1',
-    port: 1301,
     // database: 'drags',
   });
 
@@ -39,7 +35,12 @@ else if (argv.version) {
   console.log(require('../package').version);
 }
 else {
-  var commands = require('./drags-commands');
+  var commands = {
+    'add-administrator': require('./commands/add-administrator'),
+    'install': require('./commands/install'),
+    'server': require('./commands/server'),
+  };
+
   argv = opts
     .demand('surveys')
     .check(function() {
