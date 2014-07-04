@@ -396,8 +396,10 @@ angular.module('misc-js/angular-plugins', [])
         // var throbber_el = angular.element('<img src="/static/lib/img/throbber-16.gif">');
         scope.add('...');
 
-        // wrap value with .when() to support both strings and promises of strings
-        $q.when(value).then(function(message) {
+        // for some reason, .finally() doesn't get the promise's value,
+        // so we have to use .then(a, a)
+        var done = function(message) {
+          // so we recreate
           scope.remove('...');
           scope.add(message);
 
@@ -407,7 +409,9 @@ angular.module('misc-js/angular-plugins', [])
               scope.remove(message);
             }, timeout);
           }
-        });
+        };
+        // wrap value with .when() to support both strings and promises of strings
+        $q.when(value).then(done, done);
       });
     }
   };
