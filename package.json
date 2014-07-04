@@ -33,7 +33,6 @@
     "backbone": "*",
     "handlebars": "*",
     "jquery": "*",
-    "json2": "*",
     "misc-js": "git://github.com/chbrown/misc-js.git",
     "moment": "*",
     "ng-storage": "*",

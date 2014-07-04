@@ -13,7 +13,7 @@ var models = require('../../lib/models');
 var year_milliseconds = 365*24*60*60*1000;
 
 var R = new Router(function(req, res) {
-  res.die(404, 'No resource at: ' + req.url);
+  res.status(404).die('No resource at: ' + req.url);
 });
 
 R.any(/^\/admin\/users/, require('./users'));
@@ -36,7 +36,7 @@ R.get('/admin/responses/distinct-ids', function(req, res) {
       select.add('DISTINCT stimulus_id AS id').execute(callback);
     },
   ], function(err, results) {
-    if (err) return res.die('/admin/responses/distinct-ids query error', err);
+    if (err) return res.die('/admin/responses/distinct-ids query error: ' + err.toString());
     var result = {
       user_ids: _.pluck(results[0], 'id'),
       experiment_ids: _.pluck(results[1], 'id'),
@@ -48,14 +48,13 @@ R.get('/admin/responses/distinct-ids', function(req, res) {
 
 R.get(/^\/admin\/responses\/values/, function(req, res) {
   var params = url.parse(req.url, true).query;
-  if (!params.stimulus_id) return res.die(400, 'stimulus_id parameter is required');
+  if (!params.stimulus_id) return res.status(400).die('stimulus_id parameter is required');
 
-  var select = db.Select({table: 'responses'})
-    .add('DISTINCT value')
-    .where('stimulus_id = ?', params.stimulus_id)
-    .orderBy('value');
-
-  select.execute(function(err, rows) {
+  var select = db.Select('responses')
+  .add('DISTINCT value')
+  .whereEqual({stimulus_id: params.stimulus_id})
+  .orderBy('value')
+  .execute(function(err, rows) {
     if (err) return res.die('/admin/responses/values query error', err);
     var result = {
       values: _.pluck(rows, 'value'),
@@ -111,10 +110,9 @@ var format_date = function(date) {
   return date.toISOString().replace(/T/, ' ').replace(/Z/, '');
 };
 
-var responses_csv = function(req, res, select) {
-  var urlObj = url.parse(req.url, true);
-  // call with ?view to view the resulting csv as text in the browser
-  if (urlObj.query.view === undefined) {
+var responses_csv = function(res, select, params) {
+  // call with ?download=false to view the resulting csv as text in the browser
+  if (params.download == 'true') {
     var iso_date = new Date().toISOString().split('T')[0];
     var disposition = 'attachment; filename=surveys_' + iso_date + '.csv';
     res.writeHead(200, {'Content-Type': 'text/csv', 'Content-Disposition': disposition});
@@ -124,13 +122,13 @@ var responses_csv = function(req, res, select) {
   }
 
   // {peek: 256} means hold up to the first 256 rows to determine columns before responding with any
-  var csv = new sv.Stringifier({peek: 256});
+  var csv = new sv.Stringifier({peek: 1024});
 
   var now = Date.now();
 
   // maybe use pg-cursor ? https://github.com/brianc/node-pg-cursor
   select.orderBy('user_id ASC').execute(function(err, rows) {
-    if (err) return res.die(500, 'Database error: ' + err.toString());
+    if (err) return res.die('Database error: ' + err.toString());
 
     /** responses table:
 
@@ -156,7 +154,7 @@ var responses_csv = function(req, res, select) {
         if (!isNaN(value)) {
           value = Number(value);
           if (Math.abs(now - value) < (year_milliseconds * 10)) {
-            // values is epoch ticks within 10 years of today: convert to Date
+            // if value is epoch ticks within 10 years of today: convert to Date
             value = format_date(new Date(value));
           }
           item[key] = value;
@@ -176,23 +174,6 @@ var responses_csv = function(req, res, select) {
   csv.pipe(res);
 };
 
-var responses_json = function(req, res, select) {
-  async.auto({
-    rows: function(callback) {
-      select.orderBy('id DESC').limit(100).execute(callback);
-    },
-    total: function(callback) {
-      select.add('COUNT(id)').execute(function(err, rows) {
-        callback(err, err || rows[0].count);
-      });
-    }
-  }, function(err, results) {
-    if (err) return res.die('Database error: ' + err.toString());
-
-    res.json(results);
-  });
-};
-
 /** GET /admin/responses
 
 Optional querystring args:
@@ -208,19 +189,33 @@ R.get(/^\/admin\/responses\.(\w+)/, function(req, res, m) {
   .whereEqual({experiment_id: params.experiment_id});
 
   // both stimulus and value have to be given in order to filter by user
+  logger.info('params', params);
   if (params.stimulus_id && params.value) {
     select = select.where('user_id IN (SELECT user_id FROM responses WHERE stimulus_id = ? AND value = ?)',
       params.stimulus_id, params.value);
   }
 
   if (m[1] == 'json') {
-    responses_json(req, res, select);
+    async.auto({
+      rows: function(callback) {
+        select.orderBy('id DESC').limit(100).execute(callback);
+      },
+      total: function(callback) {
+        select.add('COUNT(id)').execute(function(err, rows) {
+          callback(err, err || rows[0].count);
+        });
+      }
+    }, function(err, results) {
+      if (err) return res.die('Database error: ' + err.toString());
+
+      res.json(results);
+    });
   }
   else if (m[1] == 'csv') {
-    responses_csv(req, res, select);
+    responses_csv(res, select, params);
   }
   else {
-    res.die(404, 'Unsupported response type: ' + m[1]);
+    res.status(404).die('Unsupported response type: ' + m[1]);
   }
 });
 

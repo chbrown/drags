@@ -1,4 +1,7 @@
 /*jslint browser: true */
+var p = console.log.bind(console);
+
+
 function EventEmitter() {
   this.events = {};
 }
@@ -22,6 +25,11 @@ EventEmitter.prototype.emit = function(name /*, args*/) {
     handler.fn.apply(handler.thisArg, args);
   }
 };
+
+function time() {
+  return (new Date()).getTime();
+}
+
 
 function Logger(opts) {
   /** `new Logger`: create new logger for glossing over a missing console
@@ -67,46 +75,3 @@ Logger.prototype._log = function(level, args) {
     this._log(level, arguments);
   };
 });
-
-function time() {
-  return (new Date()).getTime();
-}
-
-if (typeof($) !== 'undefined') {
-  $.fn.objectifyForm = function() {
-    var form = {};
-    this.children('div[id]').each(function() {
-      var $field = $(this);
-      var value = [];
-      var force_list = false;
-
-      $field.find('input[type="text"]').each(function(i, el) {
-        value.push(el.value);
-      });
-      $field.find('input[type="password"]').each(function(i, el) {
-        value.push(el.value);
-      });
-      if ($field.find('input[type="checkbox"]').length > 1) {
-        force_list = true;
-      }
-
-      // for each checkbox/radiobutton get the id, find the label[for=<that-id>].innerText, use that as value
-      $field.find('input[type="checkbox"]:checked').each(function(i, el) {
-        value.push($(el).parent('label').text().trim());
-      });
-      $field.find('input[type="radio"]:checked').each(function(i, el) {
-        value.push($(el).parent('label').text().trim());
-      });
-
-      if (value.length === 0) {
-        value = null;
-      }
-      else if (value.length === 1 && !force_list) {
-        value = value[0];
-      }
-
-      form[this.id] = value;
-    });
-    return form;
-  };
-}

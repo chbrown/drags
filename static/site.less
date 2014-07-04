@@ -1,57 +1,14 @@
 body {
-  font-family: Arial, Verdana;
-  font-size: 12px;
+  font-family: Arial, Verdana, sans-serif;
   margin: 0;
   padding: 0;
-}
-a {
-  color: #2d3a51;
-  &:hover {
-    color: #2b578a;
-  }
-  &.valign-middle {
-    img, span, b, i {
-      vertical-align: middle;
-    }
-  }
-}
-section {
-  margin: 10px auto;
-}
-nav {
-  position: fixed;
-  top: 0;
-  left: 0;
   background-color: #FDFDFD;
-  padding: 0 2px;
-  width: 100%;
-  border-bottom: 1px solid #CCC;
-  a, span {
-    display: inline-block;
-    padding: 2px 6px;
-    margin: 2px;
-    background-color: white;
-    border-radius: 2px;
-    border: 1px solid transparent;
-  }
-  a {
-    border: 1px solid #999;
-    &:hover {
-      background-color: #F7F7F7;
-    }
-    &.current {
-      background-color: #F5F5F5;
-    }
-  }
 }
-table {
-  border-collapse: collapse;
-  th {
-    text-align: left;
-  }
-  th, td {
-    vertical-align: top;
-  }
+
+textarea, input, select {
+  vertical-align: baseline;
+  margin: 0;
+  box-sizing: border-box;
 }
 h1, h2, h3 {
   margin: 1ex 0;
@@ -62,15 +19,82 @@ ul li {
 time {
   white-space: nowrap;
 }
+section {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+.hpad {
+  margin-left: 10px;
+  margin-right: 10px;
+  font-size: 95%;
+}
 
-.filters {
-  label {
-    span {
-      font-weight: bold;
-      display: block;
-    }
+a {
+  color: #2d3a51;
+  &:hover {
+    color: #2b578a;
+  }
+}
+nav {
+  left: 0;
+  right: 0;
+  padding: 0 5px;
+  font-size: 75%;
+  // for some reason elements with opacity < 1.0 float to the top,
+  // but a non-zero z-index here fixes that
+  z-index: 100;
+
+  background-color: #999;
+  // border-bottom: 1px solid #CCC;
+
+  span, a, button, img, select {
     display: inline-block;
-    margin: 0 10px 10px 0;
+    vertical-align: middle;
+    margin: 3px 0 0 0;
+  }
+  span, a, button.anchor {
+    padding: 2px 6px;
+    border-radius: 2px 2px 0 0;
+  }
+  a, button.anchor {
+    background-color: #DDD;
+    &:hover, &.current {
+      background-color: #FDFDFD;
+    }
+  }
+}
+.flash {
+  left: 0;
+  right: 0;
+  position: fixed;
+  padding: 1px;
+  // height: 24px;
+  z-index: 1000; // only needs to be greater than the nav's z-index
+  text-align: center;
+  font-size: 90%;
+  color: white;
+  background-color: rgba(0, 0, 0, 66%);
+  pointer-events: none; // allows click through to elements underneath
+  img, span {
+    padding: 2px;
+    vertical-align: middle;
+  }
+}
+table {
+  border-collapse: collapse;
+  th {
+    text-align: left;
+  }
+  th, td {
+    vertical-align: top;
+    font-size: 90%;
+  }
+}
+table.fill {
+  width: 100%;
+  & > thead > tr > th, & > tbody > tr > td {
+    &:first-child { padding-left: 10px; }
+    &:last-child { padding-right: 10px; }
   }
 }
 table.tablesorter {
@@ -83,19 +107,20 @@ table.tablesorter {
     padding-right: 4px;
   }
 }
-table.map td {
-  border-bottom: none;
-  font-size: 90%;
-}
 
-#container {
-  background: white;
-  width: 720px;
-  margin: 10px auto;
-}
-#stage {
-  text-align: center;
-}
+// table.map td {
+//   border-bottom: none;
+//   font-size: 90%;
+// }
+
+// #container {
+//   background: white;
+//   width: 720px;
+//   margin: 10px auto;
+// }
+// #stage {
+//   text-align: center;
+// }
 
 table.stimuli {
   width: 90%;

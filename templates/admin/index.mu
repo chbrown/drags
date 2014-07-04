@@ -1,12 +1,12 @@
-<section class="filters" ng-controller="ResponsesCtrl">
+<div ng-controller="ResponsesCtrl">
 
-  <div>
+  <section class="hpad">
     <label>
-      <span>Filter experiments</span>
+      <div><b>Filter experiments</b></div>
       <select ng-model="$storage.filter.experiment_id"
         ng-options="id for id in distinct.experiment_ids"></select>
-      <button ng-click="$storage.filter.experiment_id = null">Clear</button>
     </label>
+    <button ng-click="$storage.filter.experiment_id = null">Clear</button>
     <!-- <label>
       <span>Stimulus</span>
       <select ng-model="$storage.filter.stimulus_id"
@@ -19,32 +19,54 @@
         ng-options="id for id in distinct.user_ids"></select>
       <button ng-click="$storage.filter.user_id = null">Clear</button>
     </label> -->
-  </div>
+  </section>
 
-  <div>
-    <label>
-      <span>Filter by user where stimulus</span>
-      <select ng-model="$storage.filter.stimulus_id" ng-change="loadDistinctValues()"
-        ng-options="id for id in distinct.stimulus_ids"></select>
-    </label>
-    <label>
-      <span>has value</span>
-      <select ng-model="$storage.filter.value"
-        ng-options="id for id in stimulus_values"></select>
-    </label>
-    <button ng-click="$storage.filter.value = null">Clear</button>
-  </div>
+  <section class="hpad">
+    <ul>
+      <li>
+        <a href="/admin/responses.csv?download=true&experiment_id=<% $storage.filter.experiment_id %>"
+          ng-click="clickDebounce($event)">
+          <b>Export CSV</b>
+        </a>
+      </li>
+      <li>
+        <a href="/admin/responses.csv?download=false&experiment_id=<% $storage.filter.experiment_id %>">
+        Preview CSV
+        </a>
+      </li>
+    </ul>
+  </section>
 
-  <a href="/admin/responses.csv" ng-click="clickDebounce($event)" class="valign-middle">
-    <img src="/static/img/page_excel.png" /><b>Export spreadsheet</b></a>
-
-  <a href="/admin/responses.csv?view=yes" style="padding-left: 20px; font-size: 80%;">preview csv</a>
-
-  <hr />
+  <section class="hpad">
+    <table>
+      <tr>
+        <td><b>Filter by user where stimulus</b></td>
+        <td><b>has value</b></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>
+          <select ng-model="$storage.filter.stimulus_id" ng-options="id for id in distinct.stimulus_ids">
+            <option value="">-- stimulus id --</option>
+          </select>
+        </td>
+        <td>
+          <select ng-model="$storage.filter.value" ng-options="id for id in stimulus_values">
+            <option value="">-- stimulus value --</option>
+          </select>
+        </td>
+        <td>
+          <button ng-click="$storage.filter.value = null">Clear</button>
+        </td>
+      </tr>
+    </table>
+  </section>
 
   <div ng-if="responses">
-    <h2>Showing <% responses.length %> of <% total %> responses</h2>
-    <table class="tablesorter">
+    <div class="hpad">
+      <h3>Showing <% responses.length %> of <% total %> responses</h3>
+    </div>
+    <table class="tablesorter fill">
       <thead>
         <tr>
           <th>Response</th>
@@ -65,8 +87,8 @@
         <td>
           <map ng-model="response.details"></map>
         </td>
-        <td><time><% response.created %></time></td>
+        <td><time><% response.created | date:'yyyy-MM-dd HH:mm:ss' %></time></td>
       </tr>
     </table>
   </div>
-</section>
+</div>

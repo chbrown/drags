@@ -7,15 +7,15 @@
   <form action="/users" method="POST">
     <div>
       <label><div>Email</div>
-        <input name="email" type="text" value="{{user.email}}" />
+        <input name="email" type="text" value="{{user.email}}">
       </label>
     </div>
     <div>
       <label><div>Password</div>
-        <input name="password" type="password" />
+        <input name="password" type="password">
       </label>
     </div>
-    <input name="redirect" type="hidden" value="{{redirect}}" />
+    <input name="redirect" type="hidden" value="{{redirect}}">
     <button>Login</button>
   </form>
 </section>

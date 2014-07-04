@@ -42,7 +42,7 @@ R.post('/users', function(req, res) {
 
       var new_ticket = hash.random(40);
       var sql = 'UPDATE users SET ticket = $1 WHERE id = $2';
-      db.query(sql, [new_ticket, user.id], function(err) {
+      db.Update('users').set({ticket: new_ticket}).whereEqual({id: user.id}).execute(function(err) {
         if (err) return res.die('User update error', err);
 
         req.cookies.set('ticket', new_ticket);
@@ -56,15 +56,11 @@ R.post('/users', function(req, res) {
 /** GET /logout
 helper page to purge ticket */
 R.get('/users/logout', function(req, res) {
-  logger.debug('Deleting ticket cookie "%s" for user "%s"',
-    req.cookies.get('ticket'), req.user._id);
+  var old_ticket = req.cookies.get('ticket');
+  logger.debug('Deleting ticket cookie "%s" for user "%s"', old_ticket, req.user._id);
   req.cookies.del('ticket');
 
   res.redirect('/users');
 });
 
-module.exports = function(req, res) {
-  /** Handle /users* requests
-  */
-  R.route(req, res);
-};
+module.exports = R.route.bind(R);

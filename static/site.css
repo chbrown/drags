@@ -1,26 +1,27 @@
-body{font-family:Arial,Verdana;font-size:12px;margin:0;padding:0}
-a{color:#2d3a51}
-a:hover{color:#2b578a}
-a.valign-middle b,a.valign-middle i,a.valign-middle img,a.valign-middle span{vertical-align:middle}
-section{margin:10px auto}
-nav{position:fixed;top:0;left:0;background-color:#FDFDFD;padding:0 2px;width:100%;border-bottom:1px solid #CCC}
-nav a,nav span{display:inline-block;padding:2px 6px;margin:2px;background-color:#fff;border-radius:2px;border:1px solid transparent}
-nav a{border:1px solid #999}
-nav a:hover{background-color:#F7F7F7}
-nav a.current{background-color:#F5F5F5}
-table{border-collapse:collapse}
-table th{text-align:left}
-table td,table th{vertical-align:top}
+body{font-family:Arial,Verdana,sans-serif;margin:0;padding:0;background-color:#FDFDFD}
+input,select,textarea{vertical-align:baseline;margin:0;box-sizing:border-box}
 h1,h2,h3{margin:1ex 0}
 ul li{padding:.5ex 0}
 time{white-space:nowrap}
-.filters label{display:inline-block;margin:0 10px 10px 0}
-.filters label span{font-weight:700;display:block}
+section{margin-top:10px;margin-bottom:10px}
+.hpad{margin-left:10px;margin-right:10px;font-size:95%}
+a{color:#2d3a51}
+a:hover{color:#2b578a}
+nav{left:0;right:0;padding:0 5px;font-size:75%;z-index:100;background-color:#999}
+nav a,nav button,nav img,nav select,nav span{display:inline-block;vertical-align:middle;margin:3px 0 0}
+nav a,nav button.anchor,nav span{padding:2px 6px;border-radius:2px 2px 0 0}
+nav a,nav button.anchor{background-color:#DDD}
+nav a.current,nav a:hover,nav button.anchor.current,nav button.anchor:hover{background-color:#FDFDFD}
+.flash{left:0;right:0;position:fixed;padding:1px;z-index:1000;text-align:center;font-size:90%;color:#fff;background-color:rgba(0,0,0,.66);pointer-events:none}
+.flash img,.flash span{padding:2px;vertical-align:middle}
+table{border-collapse:collapse}
+table th{text-align:left}
+table td,table th{vertical-align:top;font-size:90%}
+table.fill{width:100%}
+table.fill>tbody>tr>td:first-child,table.fill>thead>tr>th:first-child{padding-left:10px}
+table.fill>tbody>tr>td:last-child,table.fill>thead>tr>th:last-child{padding-right:10px}
 table.tablesorter>thead>tr>th{border-bottom:1px solid #ccc;padding-right:4px}
 table.tablesorter>tbody>tr>td{border-bottom:1px solid #eee;padding-right:4px}
-table.map td{border-bottom:0;font-size:90%}
-#container{background:#fff;width:720px;margin:10px auto}
-#stage{text-align:center}
 table.stimuli{width:90%;margin:10px auto 20px}
 table.stimuli td{text-align:center;vertical-align:middle;width:33%}
 table.stimuli td.control{font-size:110%}
