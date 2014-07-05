@@ -148,7 +148,7 @@ var melted_responses_csv = function(rows, melt) {
   melt should be a list of stimulus_id names
   */
   logger.info('Melting %d responses', rows.length);
-  var csv = new sv.Stringifier({peek: 1000});
+  var csv = new sv.Stringifier({peek: 10000});
   var melt_lookup = _.keyed(melt);
   // users is a collection of objects, keyed by user_id, with a .responses field,
   // and then other values for the keys in `melt`
@@ -163,7 +163,10 @@ var melted_responses_csv = function(rows, melt) {
     // here's where the melt variables come in
     if (melt_lookup[row.stimulus_id]) {
       // ignore details for melted variables
-      user.meta[row.stimulus_id] = row.value;
+      // not sure about that row.value, it's kind of a hack for resubmitting empty values
+      if (row.value) {
+        user.meta[row.stimulus_id] = row.value;
+      }
     }
     else {
       // var response = _.omit(row, 'details');
@@ -197,7 +200,7 @@ var melted_responses_csv = function(rows, melt) {
 
 var responses_csv = function(rows) {
   // {peek: 256} means hold up to the first 256 rows to determine columns before responding with any
-  var csv = new sv.Stringifier({peek: 1000});
+  var csv = new sv.Stringifier({peek: 10000});
   // maybe use pg-cursor ? https://github.com/brianc/node-pg-cursor
   /** responses table:
 
