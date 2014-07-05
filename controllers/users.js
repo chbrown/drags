@@ -12,7 +12,7 @@ var models = require('../lib/models');
 
 var R = new Router(function(req, res) {
   // res.redirect('/users');
-  res.die(404, 'No resource at: ' + req.url);
+  res.status(404).die('No resource at: ' + req.url);
 });
 
 /** GET /users
