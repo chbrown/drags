@@ -34,8 +34,9 @@ var handler = function(req, res) {
   */
   var started = Date.now();
   res.on('finish', function() {
-    logger.info('duration', {url: req.url, method: req.method, ms: Date.now() - started});
+    logger.info('%s %s [%dms]', req.method, req.url, Date.now() - started);
   });
+
 
   req.cookies = new Cookies(req, res);
   var current_ticket = req.cookies.get('ticket');

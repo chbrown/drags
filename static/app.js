@@ -27,6 +27,11 @@ app.controller('ResponsesCtrl', function($scope, $localStorage, $http, $flash, $
     }
   });
 
+  $scope.export_links = [
+    {name: 'Download', download: 'true'},
+    {name: 'Preview', download: 'false'},
+  ];
+
   var fmtHttpError = function(res) {
     return $q.reject(res.status + ': ' + res.statusText + ': ' + String(res.data));
   };

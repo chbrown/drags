@@ -2,7 +2,10 @@
 
   <section class="hpad">
     <label>
-      <div><b>Filter experiments</b></div>
+      <div>
+        <b>Filter experiments</b>
+        <span class="help">Only responses linked to the specified experiment will show up in the list below and in the exported CSV</span>
+      </div>
       <select ng-model="$storage.filter.experiment_id"
         ng-options="id for id in distinct.experiment_ids"></select>
     </label>
@@ -22,16 +25,22 @@
   </section>
 
   <section class="hpad">
+    <label>
+      <div>
+        <b>Metadata variables</b>
+        <span class="help">Separate with commas. If you have demographic data for each user, like "age", "sex" and "hearing", that you want replicated on every response row, enter "age,sex,hearing" in this area. This has no effect on the response preview on this page.</span>
+      </div>
+      <textarea ng-model="$storage.melt" style="width: 600px" rows="4" ng-list=","></textarea>
+      <p>
+    </label>
+  </section>
+
+  <section class="hpad">
+    <h3>CSV Export</h3>
     <ul>
-      <li>
-        <a href="/admin/responses.csv?download=true&experiment_id=<% $storage.filter.experiment_id %>"
-          ng-click="clickDebounce($event)">
-          <b>Export CSV</b>
-        </a>
-      </li>
-      <li>
-        <a href="/admin/responses.csv?download=false&experiment_id=<% $storage.filter.experiment_id %>">
-        Preview CSV
+      <li ng-repeat="link in export_links">
+        <a href="/admin/responses.csv?download=<% link.download %>&experiment_id=<% $storage.filter.experiment_id %>&melt=<% $storage.melt.join(',') %>" ng-click="clickDebounce($event)">
+          <b><% link.name %></b>
         </a>
       </li>
     </ul>
@@ -60,6 +69,7 @@
         </td>
       </tr>
     </table>
+    <span class="help">This has no effect on the exported data above.</span>
   </section>
 
   <div ng-if="responses">

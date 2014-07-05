@@ -5,6 +5,7 @@ ul li{padding:.5ex 0}
 time{white-space:nowrap}
 section{margin-top:10px;margin-bottom:10px}
 .hpad{margin-left:10px;margin-right:10px;font-size:95%}
+.help{font-size:80%;cursor:pointer}
 a{color:#2d3a51}
 a:hover{color:#2b578a}
 nav{left:0;right:0;padding:0 5px;font-size:75%;z-index:100;background-color:#999}
@@ -12,7 +13,7 @@ nav a,nav button,nav img,nav select,nav span{display:inline-block;vertical-align
 nav a,nav button.anchor,nav span{padding:2px 6px;border-radius:2px 2px 0 0}
 nav a,nav button.anchor{background-color:#DDD}
 nav a.current,nav a:hover,nav button.anchor.current,nav button.anchor:hover{background-color:#FDFDFD}
-.flash{left:0;right:0;position:fixed;padding:1px;z-index:1000;text-align:center;font-size:90%;color:#fff;background-color:rgba(0,0,0,.66);pointer-events:none}
+.flash{left:0;right:0;position:fixed;padding:2px;z-index:1000;text-align:center;font-size:90%;color:#fff;background-color:rgba(0,0,0,.66);pointer-events:none}
 .flash img,.flash span{padding:2px;vertical-align:middle}
 table{border-collapse:collapse}
 table th{text-align:left}
