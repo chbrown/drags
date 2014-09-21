@@ -15,7 +15,7 @@
 </head>
 <body ng-app="app">
   <flash></flash>
-  <nav fixedflow>
+  <nav fixedflow activate-current-anchor>
     <a href="/admin">Admin</a>
     <!-- <a href="/admin/users">Users</a> -->
     <a href="/users/logout" style="float: right">Logout</a>
