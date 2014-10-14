@@ -53,6 +53,7 @@ process.on('message', function(argv) {
       logger.error('Error loading surveys', err);
     }
   });
+  logger.debug('Initializing listener on %s:%d', config.hostname, config.port);
   server.listen(config.port, config.hostname, function() {
     logger.info('Listening on %s:%d (pid %d)', config.hostname, config.port, process.pid);
   });

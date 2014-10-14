@@ -34,12 +34,6 @@ Note, though, that the received response will be http-enhanced, and has a few ad
 
 ## Outtakes
 
-    http.ServerResponse.prototype.json = function(obj) {
-      this.writeHead(200, {"Content-Type": "application/json"});
-      this.write(JSON.stringify(obj));
-      this.end();
-    };
-
     select total_time, responses.value, name, stimuli.value from responses inner join stimuli on stimuli.id = stimulus_id;
 
     <script>

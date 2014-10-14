@@ -10,16 +10,16 @@ var roots = {
 };
 
 var R = new Router(function(req, res) {
-  res.die(404, 'Cannot find resource at ' + req.url);
+  res.status(404).die('Cannot find resource at ' + req.url);
 });
 
 var serve = function(req, res, root, path) {
   send(req, path, {root: root})
     .on('error', function(err) {
-      res.die(err.status || 500, 'send error: ' + err.message);
+      res.status(err.status || 500).die('send error: ' + err.message);
     })
     .on('directory', function() {
-      res.die(404, 'No resource at: ' + req.url);
+      res.status(404).die('No resource at: ' + req.url);
     })
     .pipe(res);
 };

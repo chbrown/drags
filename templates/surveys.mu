@@ -1,4 +1,4 @@
-<section style="background-color: white; border: 1px solid #EEE; padding: 10px; margin: 100px;">
+<section style="border: 1px solid #EEE; margin-top: 100px; width: 720px">
   <h3>Available surveys</h3>
 
   <ul>
