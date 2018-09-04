@@ -1,4 +1,3 @@
-/*jslint node: true */
 var _ = require('underscore');
 var amulet = require('amulet');
 var url = require('url');

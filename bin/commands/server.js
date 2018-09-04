@@ -1,4 +1,3 @@
-/*jslint node: true */
 var cluster = require('cluster');
 var logger = require('loge');
 var path = require('path');

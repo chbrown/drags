@@ -1,4 +1,3 @@
-/*jslint node: true */
 var _ = require('underscore');
 var sv = require('sv');
 var querystring = require('querystring');

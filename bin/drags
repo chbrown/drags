@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/*jslint node: true */
 var os = require('os');
 var logger = require('loge');
 

@@ -1,4 +1,3 @@
-/*jslint node: true */
 var logger = require('loge');
 
 var db = require('../../lib/db');

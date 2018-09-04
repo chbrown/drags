@@ -1,4 +1,3 @@
-/*jslint node: true */
 var async = require('async');
 var logger = require('loge');
 var path = require('path');

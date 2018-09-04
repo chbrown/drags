@@ -1,4 +1,3 @@
-/*jslint node: true */
 // this file will be called multiple times for each child worker
 var cluster = require('cluster');
 var domain = require('domain');

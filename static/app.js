@@ -1,4 +1,3 @@
-/*jslint browser: true, devel: true */ /*globals _, angular, p */
 var app = angular.module('app', [
   'ngStorage',
   'misc-js/angular-plugins',

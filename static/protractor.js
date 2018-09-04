@@ -1,4 +1,3 @@
-/*jslint browser: true */ /*globals jQuery, window, console */
 (function(exports) {
   function offset(el) {
     // maybe hack in jQuery global since $.fn.offset is kind of handy?

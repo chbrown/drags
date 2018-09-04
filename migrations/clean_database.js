@@ -1,4 +1,3 @@
-/*jslint node: true */
 var _ = require('underscore');
 var async = require('async');
 var pg = require('pg');

@@ -1,4 +1,3 @@
-/*jslint browser: true */
 var p = console.log.bind(console);
 
 

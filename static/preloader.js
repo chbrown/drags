@@ -1,4 +1,3 @@
-/*jslint browser: true */ /*globals $, EventEmitter */
 var Preloader = (function() {
   var E = function(tagName, attributes, children) {
     /** E: helper function to create a new DOM element,
